@@ -47,13 +47,25 @@ router.post('/', async (req, res) => {
   console.log(req.body);
   try {
 
-    const {phone,firstName,lastName, email,date,players,location,game } = req.body;
+    const {phone,firstName,lastName, email,date,players,location,clientId } = req.body;
+    var game = req.body.game;
+
+
+    
 
     const startDate = moment.tz(date, "America/Mexico_City").toDate();
     const endDate = moment.tz(date, "America/Mexico_City").add(20, 'minutes').toDate(); // Add 20 minutes to startDate
-    const existingClient = await Client.findOne({ phone: req.body.phone });
-
-    if (!existingClient) {
+    if (clientId) {
+      var existingClient = await Client.findById(clientId);
+    }
+    else {
+    const existingClient = await Client.findOne({
+      $or: [
+          { phone: phone },
+          { email: email }
+      ]
+  });
+    if (!existingClient && !clientId) {
       const newClient = new Client({
         phone,
         firstName,
@@ -62,11 +74,14 @@ router.post('/', async (req, res) => {
       });
       await newClient.save();
     }
-
+  }
 
       if (!game) {
         game = "Rancho Embrujado";
       }
+      console.log("game " + game);  
+
+      
       var maxClients = catalogoJuegos.find(juego => juego.name === game).maxPlayers;
 
 
@@ -75,12 +90,14 @@ router.post('/', async (req, res) => {
         date,
         location,
         participantsbooked: players,
+        availableparticipants: maxClients - players,
         startDate,
         endDate,
         game,
 
 
         });
+        console.log(newReservation);
 
         await newReservation.save();
 
@@ -103,6 +120,7 @@ router.post('/', async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Error adding Reservation" });
   }
+    
 });
 
 router.post('/block', async (req, res) => {
@@ -192,7 +210,7 @@ router.post('/addreservationclient', async (req, res) => {
 
 // GET route to fetch all notes
 router.get('/avaibility', async (req, res) => {
-  const { date, location, status } = req.query; // "YYYY-MM-DD"
+  const { date, location, status,game } = req.query; // "YYYY-MM-DD"
   console.log(req.query);
 
   let startOfDay = moment.tz(`${date} 11:00`, "America/Mexico_City");
@@ -215,8 +233,8 @@ router.get('/avaibility', async (req, res) => {
     const query = {
       location: location, // Filter by location
       startDate: { $lte: endOfDay.toDate() },
-      endDate: { $gte: startOfDay.toDate() }
-    };
+      endDate: { $gte: startOfDay.toDate() },
+    }; 
 
     // Conditionally add the status to the query if it is provided
     if (status) {
@@ -235,17 +253,27 @@ router.get('/avaibility', async (req, res) => {
 
     // Filter out slots that are taken
     const availableSlots = slots
-      .filter((slot, index, self) => self.indexOf(slot) === index) // Unique times only
-      .filter(slot => 
-        !reservations.some(reservation => {
-          const reservationStart = moment.tz(reservation.startDate, "America/Mexico_City").format("HH:mm");
-          const reservationEnd = moment.tz(reservation.endDate, "America/Mexico_City").format("HH:mm");
-          const slotTime = moment.tz(`${date} ${slot}`, "America/Mexico_City");
-          return slotTime.isBetween(moment.tz(reservation.startDate, "America/Mexico_City"), moment.tz(reservation.endDate, "America/Mexico_City"), null, '[)');
-        })
-      )
-      .map(time => ({ time })) // Map to the desired object format
-      .sort((a, b) => moment(a.time, "HH:mm").diff(moment(b.time, "HH:mm"))); // Sort by time
+    .filter((slot, index, self) => self.indexOf(slot) === index)
+    .map(slot => {
+      const slotTime = moment.tz(`${date} ${slot}`, "America/Mexico_City");
+      const reservation = reservations.find(reservation => {
+        const reservationStart = moment.tz(reservation.startDate, "America/Mexico_City").format("HH:mm");
+        const reservationEnd = moment.tz(reservation.endDate, "America/Mexico_City").format("HH:mm");
+        return slotTime.isBetween(moment.tz(reservation.startDate, "America/Mexico_City"), moment.tz(reservation.endDate, "America/Mexico_City"), null, '[)');
+      });
+      if (reservation) {
+        return {
+          time: slot,
+          participantsbooked: reservation.status === 'booked' ? reservation.participantsbooked : undefined,
+          availableparticipants: reservation.status === 'booked' ? reservation.availableparticipants : undefined,
+          game: reservation.game,
+
+        };
+      } else {
+        return { time: slot };
+      }
+    })
+    .sort((a, b) => moment(a.time, "HH:mm").diff(moment(b.time, "HH:mm")));
 
     console.log("AS " + JSON.stringify(availableSlots));
     res.json(availableSlots);
@@ -358,3 +386,71 @@ router.delete('/:id', async (req, res) => {
 );
 
 module.exports = router;
+
+
+/*
+// GET route to fetch all notes
+router.get('/avaibility', async (req, res) => {
+  const { date, location, status } = req.query; // "YYYY-MM-DD"
+  console.log(req.query);
+
+  let startOfDay = moment.tz(`${date} 11:00`, "America/Mexico_City");
+  let endOfDay = moment.tz(`${date} 20:00`, "America/Mexico_City");
+  let currentTime = moment.tz("America/Mexico_City");
+  if (currentTime.isAfter(startOfDay)) {
+    startOfDay = currentTime;
+    const minutes = startOfDay.minutes();
+    if (minutes < 20) {
+      startOfDay.minutes(20).seconds(0);
+    } else if (minutes < 40) {
+      startOfDay.minutes(40).seconds(0);
+    } else {
+      startOfDay.add(1, 'hour').minutes(0).seconds(0);
+    }
+  }
+
+  try {
+    // Adjusted query to find any reservations overlapping the specified date
+    const query = {
+      location: location, // Filter by location
+      startDate: { $lte: endOfDay.toDate() },
+      endDate: { $gte: startOfDay.toDate() }
+    };
+
+    // Conditionally add the status to the query if it is provided
+    if (status) {
+      query.status = status;
+    }
+
+    console.log("query " + JSON.stringify(query));
+
+    const reservations = await Reservation.find(query);
+    console.log("RR " + JSON.stringify(reservations));
+
+    let slots = [];
+    for (let time = moment(startOfDay); time.isBefore(endOfDay); time.add(20, 'minutes')) {
+      slots.push(time.format("HH:mm")); // Adjusting to output only the time part
+    }
+
+    // Filter out slots that are taken
+    const availableSlots = slots
+      .filter((slot, index, self) => self.indexOf(slot) === index) // Unique times only
+      .filter(slot => 
+        !reservations.some(reservation => {
+          const reservationStart = moment.tz(reservation.startDate, "America/Mexico_City").format("HH:mm");
+          const reservationEnd = moment.tz(reservation.endDate, "America/Mexico_City").format("HH:mm");
+          const slotTime = moment.tz(`${date} ${slot}`, "America/Mexico_City");
+          return slotTime.isBetween(moment.tz(reservation.startDate, "America/Mexico_City"), moment.tz(reservation.endDate, "America/Mexico_City"), null, '[)');
+        })
+      )
+      .map(time => ({ time })) // Map to the desired object format
+      .sort((a, b) => moment(a.time, "HH:mm").diff(moment(b.time, "HH:mm"))); // Sort by time
+
+    console.log("AS " + JSON.stringify(availableSlots));
+    res.json(availableSlots);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching reservations" });
+  }
+});
+*/

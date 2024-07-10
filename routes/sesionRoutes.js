@@ -11,6 +11,7 @@ const saveDataZoho = async (req, res) => {
     
     try {
         // Fetch the session data by ID
+        console.log("id " + id);
         const sessionData = await Sesion.findById(id);
         
         if (!sessionData) {
@@ -133,13 +134,15 @@ router.get('/', async (req, res) => {
 
 router.get('/summary/:id', async (req, res) => {
     const { id } = req.params;
+    console.log("id " + id);
     try {
         const sesions = await Sesion.findById(id);
         if (!sesions) {
             return res.status(404).json({ message: "Sesion not found" });
         }
         openingAmount = sesions.openingAmount;
-        const transactions = await Transaction.find({ sesion: id });
+        const transactions = await Transaction.find({ session: id });
+        console.log("transactions " + transactions);
         var cashAmount = 0;
         var cardAmount = 0;
         transactions.forEach(transaction => {
@@ -175,7 +178,7 @@ router.put('/:id', async (req, res) => {
             return res.status(404).json({ message: "Sesion not found" });
         }
 
-       // await saveDataZoho(res, { req });
+       await saveDataZoho(res, { req });
         res.json(updatedSesion);
     } catch (error) {
         console.error(error);
