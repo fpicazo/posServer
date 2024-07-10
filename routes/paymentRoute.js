@@ -25,8 +25,8 @@ router.post('/', async (req, res) => {
         orderId: session_id.toString(),
       },
       mode: 'payment',
-      success_url:  process.env.BASE_URL + "/success?session_id=" + session_id,
-      cancel_url: process.env.BASE_URL + '/cancel?session_id=' + session_id,
+      success_url:  process.env.BASE_URL + "/#/success?session_id=" + session_id,
+      cancel_url: process.env.BASE_URL + '/#/cancel?session_id=' + session_id,
     });
     console.log(session);
     res.json({ id: session.id }); 
