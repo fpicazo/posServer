@@ -47,8 +47,9 @@ router.post('/', async (req, res) => {
   console.log(req.body);
   try {
 
-    const {phone,firstName,lastName, email,date,players,location,clientId } = req.body;
+    const {phone,firstName,lastName, email,date,players,location } = req.body;
     var game = req.body.game;
+    var clientId = req.body.clientId;
 
 
     
@@ -73,6 +74,7 @@ router.post('/', async (req, res) => {
         email,
       });
       await newClient.save();
+      clientId = newClient._id;
     }
   }
 
@@ -108,7 +110,7 @@ router.post('/', async (req, res) => {
           startDate,
           endDate,
           game,
-          client: existingClient ? existingClient._id : newClient._id,
+          client: existingClient ? existingClient._id : clientId,
           reservation: newReservation._id,
         });
 
