@@ -289,7 +289,6 @@ router.get('/avaibility', async (req, res) => {
 router.get('/', async (req, res) => {
   const { startDate } = req.query;
 
-
   const query = {};
 
   // Set startDate to provided value or today's date if not provided
@@ -304,15 +303,22 @@ router.get('/', async (req, res) => {
     query.startDate = { $gte: todayStart, $lte: todayEnd };
   }
 
-    try {
-        const reservation = await Reservation.find(query);
-        res.json(reservation);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching reservation" });
-    }
+  try {
+    const reservations = await Reservation.find(query);
+    
+    // Add the 'time' field to each reservation
+    const reservationsWithTime = reservations.map(reservation => ({
+      ...reservation.toObject(),
+      time: moment(reservation.startDate).format('HH:mm')
+    }));
 
+    res.json(reservationsWithTime);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching reservations" });
+  }
 });
+
 
 router.get('/blocked', async (req, res) => {
   try {
@@ -321,6 +327,16 @@ router.get('/blocked', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching blocked reservations" });
+  }
+});
+
+router.get('/booked', async (req, res) => {
+  try {
+    const reservations = await Reservation.find({ status: "booked" });
+    res.json(reservations);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching booked reservations" });
   }
 });
 
