@@ -157,6 +157,7 @@ router.get('/weekly-summary', async (req, res) => {
 });
 
 
+
 // GET route to fetch all notes
 router.get('/', async (req, res) => {
   try {

@@ -39,13 +39,13 @@ router.post('/register', async (req, res) => {
     try {
       const { email, password, role,offices,firstName,lastName,phone } = req.body;
       if (!email || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
+        return res.status(400).json({ message: "nombre, apellido y contraseña son obligatorio" });
       }
   
       // Check if user already exists
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        return res.status(400).json({ message: "Username already taken" });
+        return res.status(400).json({ message: "Existe un user con ese email" });
       }
 
       if( role == null){
@@ -54,7 +54,9 @@ router.post('/register', async (req, res) => {
       // Create and save the user
       const user = new User({ email, password, role,offices,firstName,lastName,phone});
       
-      await user.save();
+      const userCreation = await user.save();
+      console.log("User created " + userCreation);
+
       const token = jwt.sign({ email: user.email }, process.env.SECRET_KEY, { expiresIn: '24h' });
       // Respond with success (don't send back the password or sensitive info)
       return res.status(201).json({ message: "User created successfully", token });

@@ -11,6 +11,7 @@ router.post('/', async (req, res) => {
     const articulos = req.body.articulos;
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
+      customer_email: req.body.email || 'test@test.com',
       line_items: [{
         price_data: {
           currency: 'mxn',

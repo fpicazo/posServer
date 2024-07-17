@@ -46,26 +46,27 @@ const createPaymentLink = async (res, data) => {
 router.post('/', async (req, res) => {
   console.log(req.body);
   try {
-
-    const {phone,firstName,lastName, email,date,players,location } = req.body;
+    const { phone, firstName, lastName, email, date, players, location } = req.body;
     var game = req.body.game;
     var clientId = req.body.clientId;
 
-
-    
-
     const startDate = moment.tz(date, "America/Mexico_City").toDate();
     const endDate = moment.tz(date, "America/Mexico_City").add(20, 'minutes').toDate(); // Add 20 minutes to startDate
+    //console.log("startDate " + startDate);
+    let existingClient;
     if (clientId) {
-      var existingClient = await Client.findById(clientId);
-    }
-    else {
-    const existingClient = await Client.findOne({
-      $or: [
+      existingClient = await Client.findById(clientId);
+    } else {
+      existingClient = await Client.findOne({
+        $or: [
           { phone: phone },
           { email: email }
-      ]
-  });
+        ]
+      });
+    }
+
+    console.log("search existing client " + existingClient);
+
     if (!existingClient && !clientId) {
       const newClient = new Client({
         phone,
@@ -75,55 +76,53 @@ router.post('/', async (req, res) => {
       });
       await newClient.save();
       clientId = newClient._id;
+    } else {
+      clientId = existingClient ? existingClient._id : clientId;
     }
-  }
 
-      if (!game) {
-        game = "Rancho Embrujado";
-      }
-      console.log("game " + game);  
+    if (!game) {
+      game = "Rancho Embrujado";
+    }
+    console.log("game " + game);
 
-      
-      var maxClients = catalogoJuegos.find(juego => juego.name === game).maxPlayers;
-
+    var maxClients = catalogoJuegos.find(juego => juego.name === game).maxPlayers;
 
     const newReservation = new Reservation({
+      date,
+      location,
+      participantsbooked: players,
+      availableparticipants: maxClients - players,
+      startDate,
+      endDate,
+      game,
+    });
 
-        date,
-        location,
-        participantsbooked: players,
-        availableparticipants: maxClients - players,
-        startDate,
-        endDate,
-        game,
+    console.log(newReservation);
 
+    await newReservation.save();
 
-        });
-        console.log(newReservation);
+    const newReservationXCliente = new ReservationXCliente({
+      players,
+      date,
+      location,
+      startDate,
+      endDate,
+      game,
+      client: clientId,
+      reservation: newReservation._id,
+    });
 
-        await newReservation.save();
+    console.log("New reservation cliente " + newReservationXCliente);
 
-        const newReservationXCliente = new ReservationXCliente({
-          players,
-          date,
-          location,
-          startDate,
-          endDate,
-          game,
-          client: existingClient ? existingClient._id : clientId,
-          reservation: newReservation._id,
-        });
+    await newReservationXCliente.save();
 
-        await newReservationXCliente.save();
-    
-    res.status(201).json(newReservationXCliente);
-
+    res.status(201).json(newReservation);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error adding Reservation" });
   }
-    
 });
+
 
 router.post('/block', async (req, res) => {
   console.log(req.body);
@@ -216,7 +215,7 @@ router.get('/avaibility', async (req, res) => {
   console.log(req.query);
 
   let startOfDay = moment.tz(`${date} 11:00`, "America/Mexico_City");
-  let endOfDay = moment.tz(`${date} 20:00`, "America/Mexico_City");
+  let endOfDay = moment.tz(`${date} 21:00`, "America/Mexico_City");
   let currentTime = moment.tz("America/Mexico_City");
   if (currentTime.isAfter(startOfDay)) {
     startOfDay = currentTime;
@@ -343,6 +342,8 @@ router.get('/booked', async (req, res) => {
 // PUT route to update a note
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
+  console.log(id);
+  console.log(req.body);
     const { phone, firstName, lastName, email } = req.body;
   try {
     const updatedReservation = await Reservation.findByIdAndUpdate(
@@ -354,6 +355,8 @@ router.put('/:id', async (req, res) => {
     if (!updatedReservation) {
         return res.status(404).json({ message: "Reservation not found" });
         }
+    
+
 
     res.json(updatedReservation);
     } catch (error) {
@@ -363,19 +366,37 @@ router.put('/:id', async (req, res) => {
 );
 
 router.put('/status/:id', async (req, res) => {
+  console.log(req.body );
   const { id } = req.params;
+  console.log(id);
   const { status } = req.body;
   try {
-    const updatedReservation = await Reservation.findByIdAndUpdate(
+    var updatedReservation = await Reservation.findByIdAndUpdate(
       id,
       { status },
       { new: true }
     );
+    console.log("Reserva " + updatedReservation);
+    const details = await ReservationXCliente.find({ reservation: id });
+    console.log("Details " + JSON.stringify(details));
+    console.log(updatedReservation);
 
-    if (!updatedReservation) {
-      return res.status(404).json({ message: "Reservation not found" });
+    var clientId = details[0].client;
+    const client = await Client.findById(clientId);
+
+    if (!client) {
+      return res.status(404).json({ message: "Client not found" });
     }
 
+
+    updatedReservation = updatedReservation.toObject(); // Convert to plain JavaScript object
+    updatedReservation.clientName = client.firstName + " " + client.lastName;
+    updatedReservation.players = details[0].players;
+
+    if (!updatedReservation) {
+      return res.status(404).json({ message: "Reservation not found222" });
+    }
+    console.log(updatedReservation);
     res.json(updatedReservation);
   } catch (error) {
     res.status(500).json({ message: "Error updating Reservation" });
