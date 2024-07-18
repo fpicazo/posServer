@@ -46,7 +46,7 @@ const createPaymentLink = async (res, data) => {
 router.post('/', async (req, res) => {
   console.log(req.body);
   try {
-    const { phone, firstName, lastName, email, date, players, location } = req.body;
+    const { phone, firstName, lastName, email, date, players, location,amountIndiv,modo } = req.body;
     var game = req.body.game;
     var clientId = req.body.clientId;
 
@@ -95,6 +95,8 @@ router.post('/', async (req, res) => {
       startDate,
       endDate,
       game,
+      amountIndiv,
+      modo
     });
 
     console.log(newReservation);
@@ -392,6 +394,8 @@ router.put('/status/:id', async (req, res) => {
     updatedReservation = updatedReservation.toObject(); // Convert to plain JavaScript object
     updatedReservation.clientName = client.firstName + " " + client.lastName;
     updatedReservation.players = details[0].players;
+    updatedReservation.clientId = client.clientId;
+    updatedReservation.amount = details[0].amountIndiv;
 
     if (!updatedReservation) {
       return res.status(404).json({ message: "Reservation not found222" });

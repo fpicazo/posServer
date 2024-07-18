@@ -116,7 +116,7 @@ router.post('/', async (req, res) => {
     res.status(500).json({ message: "Error adding Transaction" });
   }
 });
-
+         
 router.get('/weekly-summary', async (req, res) => {
   const today = new Date();
   const sevenDaysAgo = new Date(today.setDate(today.getDate() - 7));
@@ -125,7 +125,8 @@ router.get('/weekly-summary', async (req, res) => {
     const summary = await Transactions.aggregate([
       {
         $match: {
-          date: { $gte: sevenDaysAgo, $lte: new Date() }
+          date: { $gte: sevenDaysAgo, $lte: new Date() },
+          modo: "pos"
         }
       },
       {
