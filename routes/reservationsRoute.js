@@ -51,7 +51,7 @@ router.post('/', async (req, res) => {
     var clientId = req.body.clientId;
 
     const startDate = moment.tz(date, "America/Mexico_City").toDate();
-    const endDate = moment.tz(date, "America/Mexico_City").add(20, 'minutes').toDate(); // Add 20 minutes to startDate
+    const endDate = moment.tz(date, "America/Mexico_City").add(30, 'minutes').toDate(); // Add 30 minutes to startDate
     //console.log("startDate " + startDate);
     let existingClient;
     if (clientId) {
@@ -222,11 +222,12 @@ router.get('/avaibility', async (req, res) => {
   if (currentTime.isAfter(startOfDay)) {
     startOfDay = currentTime;
     const minutes = startOfDay.minutes();
-    if (minutes < 20) {
-      startOfDay.minutes(20).seconds(0);
-    } else if (minutes < 40) {
-      startOfDay.minutes(40).seconds(0);
-    } else {
+    if (minutes < 30) {
+      startOfDay.minutes(30).seconds(0);
+    } 
+    //else if (minutes < 40) {
+      //startOfDay.minutes(40).seconds(0);    }
+       else {
       startOfDay.add(1, 'hour').minutes(0).seconds(0);
     }
   }
@@ -250,7 +251,7 @@ router.get('/avaibility', async (req, res) => {
     console.log("RR " + JSON.stringify(reservations));
 
     let slots = [];
-    for (let time = moment(startOfDay); time.isBefore(endOfDay); time.add(20, 'minutes')) {
+    for (let time = moment(startOfDay); time.isBefore(endOfDay); time.add(30, 'minutes')) {
       slots.push(time.format("HH:mm")); // Adjusting to output only the time part
     }
 
