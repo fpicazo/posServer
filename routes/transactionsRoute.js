@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
           juegosqty += quantity;
           juegostotal += total;
           break;
-        case 'Cabinas Inmersivas':
+        case 'Cabinas Inmersivas' || 'Cabinas Inmersivas 30m':
           cabinamoney += price;
           cabinaqty += quantity;
           cabinatotal += total;
