@@ -8,13 +8,20 @@ router.post('/', async (req, res) => {
   try {
 
     
-    const { amount,concept, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia } = req.body;
+    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia } = req.body;
+    console.log("BODY ", req.body);
+    var concept = req.body?.concept;
     let { date } = req.body; // Declare date with let so it can be reassigned
     
     // Check if date is not provided and assign the current date to it
     if (!date) {
       date = new Date();
     }
+
+    if (!concept ) {
+      concept = [{ name: 'Campo de Batalla', price: req.body?.campobatallamoney, quantity: req.body?.campobatallaqty }];
+    }
+
     //console.log("Concept", concept);
     const productPhrases = concept?.map(product => {
       const amount = product.price * product.quantity;

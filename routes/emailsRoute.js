@@ -6,12 +6,13 @@ const axios = require('axios');
 
 
 router.post('/confirmation', async (req, res) => {
-    const { email,nombre,hour,game } = req.body
+    const { email,clientName,hour,game } = req.body
+    console.log("email: "+email);
     const { lastTokenHour, token } = await updateTokenHour();
     var location = req.body.location || "Tepic Plaza Forum";
 
     const messageContent = `
-    Hola ${nombre},
+    Hola ${clientName},
     <br><br>
     ¡Gracias por reservar en Virtuality World ${location}. Tu recibo de reserva está abajo.
     <br><br>
@@ -54,7 +55,7 @@ router.post('/confirmation', async (req, res) => {
                     },
                     "to": [
                         {
-                            "user_name": nombre,
+                            "user_name": clientName,
                             "email": email
                         }
                     ],
@@ -68,7 +69,8 @@ router.post('/confirmation', async (req, res) => {
             ]
         }
 
-    // Send invoice data to Zoho
+        console.log("emailData: " + JSON.stringify(emailData));
+        // Send invoice data to Zoho
     const response = await axios.post('https://www.zohoapis.com/crm/v6/Contacts/3801110000049222092/actions/send_mail', emailData, { headers });
 
     // Respond with Zoho's API response

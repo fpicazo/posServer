@@ -7,7 +7,7 @@ const moment = require('moment-timezone');
 const catalogoJuegos = require('../configuration/maxplayers');
 const { updateTokenHour } = require('../utils/checkAndRefreshToken');
 const axios = require('axios');
-
+const Timezone = "America/Hermosillo";
 
 const createPaymentLink = async (res, data) => {
   try {
@@ -47,11 +47,12 @@ router.post('/', async (req, res) => {
   console.log(req.body);
   try {
     const { phone, firstName, lastName, email, date, players, location,amountIndiv,modo } = req.body;
+    console.log("date " + date);
     var game = req.body.game;
     var clientId = req.body.clientId;
 
-    const startDate = moment.tz(date, "America/Mexico_City").toDate();
-    const endDate = moment.tz(date, "America/Mexico_City").add(30, 'minutes').toDate(); // Add 30 minutes to startDate
+    const startDate = moment.tz(date,Timezone).toDate();
+    const endDate = moment.tz(date, Timezone).add(30, 'minutes').toDate(); // Add 30 minutes to startDate
     //console.log("startDate " + startDate);
     let existingClient;
     if (clientId) {
@@ -112,6 +113,9 @@ router.post('/', async (req, res) => {
       game,
       client: clientId,
       reservation: newReservation._id,
+      amountIndiv,
+      modo
+
     });
 
     console.log("New reservation cliente " + newReservationXCliente);
@@ -130,9 +134,9 @@ router.post('/block', async (req, res) => {
   console.log(req.body);
   const { status, date,startDate ,endDate, comment,location } = req.body;
  
-  const startTime = moment.tz(startDate, "America/Mexico_City");
-  const endTime = moment.tz(endDate, "America/Mexico_City");
-  const dateFormatted = moment.tz(startDate, "America/Mexico_City").format("YYYY-MM-DD");
+  const startTime = moment.tz(startDate, Timezone);
+  const endTime = moment.tz(endDate, Timezone);
+  const dateFormatted = moment.tz(startDate, Timezone).format("YYYY-MM-DD");
 
   
   try {
@@ -216,9 +220,9 @@ router.get('/avaibility', async (req, res) => {
   const { date, location, status,game } = req.query; // "YYYY-MM-DD"
   console.log(req.query);
 
-  let startOfDay = moment.tz(`${date} 11:00`, "America/Mexico_City");
-  let endOfDay = moment.tz(`${date} 21:00`, "America/Mexico_City");
-  let currentTime = moment.tz("America/Mexico_City");
+  let startOfDay = moment.tz(`${date} 11:00`,Timezone);
+  let endOfDay = moment.tz(`${date} 21:00`, Timezone);
+  let currentTime = moment.tz(Timezone);
   if (currentTime.isAfter(startOfDay)) {
     startOfDay = currentTime;
     const minutes = startOfDay.minutes();
@@ -259,11 +263,11 @@ router.get('/avaibility', async (req, res) => {
     const availableSlots = slots
     .filter((slot, index, self) => self.indexOf(slot) === index)
     .map(slot => {
-      const slotTime = moment.tz(`${date} ${slot}`, "America/Mexico_City");
+      const slotTime = moment.tz(`${date} ${slot}`,Timezone);
       const reservation = reservations.find(reservation => {
-        const reservationStart = moment.tz(reservation.startDate, "America/Mexico_City").format("HH:mm");
-        const reservationEnd = moment.tz(reservation.endDate, "America/Mexico_City").format("HH:mm");
-        return slotTime.isBetween(moment.tz(reservation.startDate, "America/Mexico_City"), moment.tz(reservation.endDate, "America/Mexico_City"), null, '[)');
+        const reservationStart = moment.tz(reservation.startDate, Timezone).format("HH:mm");
+        const reservationEnd = moment.tz(reservation.endDate, Timezone).format("HH:mm");
+        return slotTime.isBetween(moment.tz(reservation.startDate, Timezone), moment.tz(reservation.endDate, Timezone), null, '[)');
       });
       if (reservation) {
         return {
@@ -397,6 +401,7 @@ router.put('/status/:id', async (req, res) => {
     updatedReservation.players = details[0].players;
     updatedReservation.clientId = client.clientId;
     updatedReservation.amount = details[0].amountIndiv;
+    updatedReservation.email = client.email;
 
     if (!updatedReservation) {
       return res.status(404).json({ message: "Reservation not found222" });
