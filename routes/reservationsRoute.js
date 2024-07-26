@@ -347,6 +347,43 @@ router.get('/booked', async (req, res) => {
   }
 });
 
+router.get('/individual', async (req, res) => {
+  const { startDate } = req.query;
+  if (!startDate) {
+    return res.status(400).json({ message: "startDate query parameter is required" });
+  }
+
+  console.log("startDate " + startDate);
+
+  const startOfDay = moment(startDate, 'YYYY-MM-DD').startOf('day').toDate();
+  const endOfDay = moment(startDate, 'YYYY-MM-DD').endOf('day').toDate();
+
+  try {
+    // Fetch reservations within the specified date range
+    const reservations = await Reservation.find({
+      startDate: { $gte: startOfDay, $lte: endOfDay }
+    });
+
+    // Initialize an array to hold the results
+    const results = [];
+
+    // Fetch related ReservationxClientes for each reservation
+    for (const reservation of reservations) {
+      const reservationClients = await ReservationXCliente.find({ reservation: reservation._id });
+      results.push({
+        reservation,
+        reservationClients
+      });
+    }
+
+    res.json(results);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching individual reservations" });
+  }
+});
+
+
 // PUT route to update a note
 router.put('/:id', async (req, res) => {
   const { id } = req.params;

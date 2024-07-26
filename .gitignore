@@ -8,6 +8,7 @@
 # testing
 /coverage
 .env
+/utils/tokenhour.json
 
 # production
 /build
