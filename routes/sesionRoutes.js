@@ -7,10 +7,14 @@ const { updateTokenHour } = require('../utils/checkAndRefreshToken');
 const axios = require('axios');
 
 const saveDataZoho = async (req, res) => {
+
+    console.log("req.body " + req.body);
+    console.log("req " + req.params);
     const { id } = req.params;
     
     try {
         // Fetch the session data by ID
+        console.log("id " + id);
         const sessionData = await Sesion.findById(id);
         
         if (!sessionData) {
@@ -19,6 +23,11 @@ const saveDataZoho = async (req, res) => {
 
         // Consolidate transaction data by concept
         const concepts = sessionData.concept;
+
+        if (!Array.isArray(concepts)) {
+            return res.status(400).json({ message: "Invalid session concept data" });
+        }
+
         const lineItems = [];
 
         concepts.forEach(concept => {
@@ -133,13 +142,15 @@ router.get('/', async (req, res) => {
 
 router.get('/summary/:id', async (req, res) => {
     const { id } = req.params;
+    console.log("id " + id);
     try {
         const sesions = await Sesion.findById(id);
         if (!sesions) {
             return res.status(404).json({ message: "Sesion not found" });
         }
         openingAmount = sesions.openingAmount;
-        const transactions = await Transaction.find({ sesion: id });
+        const transactions = await Transaction.find({ session: id });
+        console.log("transactions " + transactions);
         var cashAmount = 0;
         var cardAmount = 0;
         transactions.forEach(transaction => {
@@ -161,27 +172,29 @@ router.get('/summary/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { cashAmount,cardAmount} = req.body;
-    console.log("cashAmount " + cashAmount);
-    console.log("cardAmount " + cardAmount);
+    const { cashAmount, cardAmount } = req.body;
+    console.log("id ", id);
+    console.log("cashAmount ", cashAmount);
+    console.log("cardAmount ", cardAmount);
     var closingAmount = cashAmount + cardAmount;
     try {
         const updatedSesion = await Sesion.findByIdAndUpdate(
             id,
-            { closingAmount,cashAmount,cardAmount, status: "closed", dateClose: new Date()},
+            { closingAmount, cashAmount, cardAmount, status: "closed", dateClose: new Date() },
             { new: false }
         );
         if (!updatedSesion) {
             return res.status(404).json({ message: "Sesion not found" });
         }
 
-       // await saveDataZoho(res, { req });
-        res.json(updatedSesion);
+       // await saveDataZoho(req, res);
+    res.json(updatedSesion);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Error updating Sesion" });
+        return res.status(500).json({ message: "Error updating Sesion" });
     }
 });
+
 
 router.post('/testing', async (req, res) => {
     try{

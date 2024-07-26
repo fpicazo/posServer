@@ -8,13 +8,20 @@ router.post('/', async (req, res) => {
   try {
 
     
-    const { amount,concept, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia } = req.body;
+    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia } = req.body;
+    console.log("BODY ", req.body);
+    var concept = req.body?.concept;
     let { date } = req.body; // Declare date with let so it can be reassigned
     
     // Check if date is not provided and assign the current date to it
     if (!date) {
       date = new Date();
     }
+
+    if (!concept ) {
+      concept = [{ name: 'Campo de Batalla', price: req.body?.campobatallamoney, quantity: req.body?.campobatallaqty }];
+    }
+
     //console.log("Concept", concept);
     const productPhrases = concept?.map(product => {
       const amount = product.price * product.quantity;
@@ -45,7 +52,7 @@ router.post('/', async (req, res) => {
           juegosqty += quantity;
           juegostotal += total;
           break;
-        case 'Cabinas Inmersivas':
+        case 'Cabinas Inmersivas' || 'Cabinas Inmersivas 30m':
           cabinamoney += price;
           cabinaqty += quantity;
           cabinatotal += total;
@@ -116,6 +123,48 @@ router.post('/', async (req, res) => {
     res.status(500).json({ message: "Error adding Transaction" });
   }
 });
+         
+router.get('/weekly-summary', async (req, res) => {
+  const today = new Date();
+  const sevenDaysAgo = new Date(today.setDate(today.getDate() - 7));
+
+  try {
+    const summary = await Transactions.aggregate([
+      {
+        $match: {
+          date: { $gte: sevenDaysAgo, $lte: new Date() },
+          modo: "pos"
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$date" },
+            month: { $month: "$date" },
+            day: { $dayOfMonth: "$date" }
+          },
+          totalAmount: { $sum: "$amount" },
+          totalByConcept: { 
+            $push: {
+              concept: "$concept",
+              amount: "$amount"
+            }
+          }
+        }
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 }
+      }
+    ]);
+
+    res.json(summary);
+  } catch (error) {
+    console.error("Error fetching weekly transaction summary:", error);
+    res.status(500).json({ message: "Error fetching transaction summary" });
+  }
+});
+
+
 
 // GET route to fetch all notes
 router.get('/', async (req, res) => {
