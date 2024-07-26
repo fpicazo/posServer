@@ -74,7 +74,7 @@ router.post('/confirmation', async (req, res) => {
     const response = await axios.post('https://www.zohoapis.com/crm/v6/Contacts/3801110000049222092/actions/send_mail', emailData, { headers });
 
     // Respond with Zoho's API response
-    console.log("Resp email " +JSON.stringify(response.data));
+    console.log("Resp email " +response.data);
     res.json(response.data);
 } catch (error) {
     console.error(error.response ? error.response.data : error);
