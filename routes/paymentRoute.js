@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
-const stripe = require('stripe')("sk_test_51HDAAcJLoV4LkDEzerLRhPyxwKwVB49Ik9qUnHU3Hdf698pdD0Xj5YCeUaXEIVk38iVLRS3UgTbePpiHNj2L1Cdb00oRfs8j9i");
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 
 router.post('/', async (req, res) => {
