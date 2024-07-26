@@ -114,7 +114,8 @@ router.post('/', async (req, res) => {
       client: clientId,
       reservation: newReservation._id,
       amountIndiv,
-      modo
+      modo,
+      status: "pending"
 
     });
 
@@ -402,10 +403,25 @@ router.put('/status/:id', async (req, res) => {
     updatedReservation.clientId = client.clientId;
     updatedReservation.amount = details[0].amountIndiv;
     updatedReservation.email = client.email;
+    updatedReservation.idreservacioncliente = details[0]._id;
 
     if (!updatedReservation) {
       return res.status(404).json({ message: "Reservation not found222" });
     }
+
+    if (status != 'booked') {
+      await ReservationXCliente.findByIdAndDelete(details[0]._id);
+    }
+    else {
+      await ReservationXCliente.findByIdAndUpdate(
+        details[0]._id,
+        { status: "booked"
+        },
+        { new: true }
+      );
+    }
+
+
     console.log(updatedReservation);
     res.json(updatedReservation);
   } catch (error) {

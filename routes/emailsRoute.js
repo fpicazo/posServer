@@ -51,7 +51,7 @@ router.post('/confirmation', async (req, res) => {
                 {
                     "from": {
                         "user_name": "Virtuality World",
-                        "email": "ricardo.garate@maxadhoc.com"
+                        "email": "info@virtualityworld.com.mx"
                     },
                     "to": [
                         {

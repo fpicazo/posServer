@@ -9,7 +9,8 @@ startDate: { type: Date, required: false },
 endDate: { type: Date, required: false },
 client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: false },
 status: { type: String, required: true, default:"booked" }, // booked or cancelled or pending
-reservation: { type: mongoose.Schema.Types.ObjectId, ref: 'Reservation', required: false }
+reservation: { type: mongoose.Schema.Types.ObjectId, ref: 'Reservation', required: false },
+status: { type: String, required: true, default:"pending" }, // booked or cancelled or pending
 
 
 }, { timestamps: true
