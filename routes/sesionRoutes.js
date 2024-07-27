@@ -160,7 +160,7 @@ router.get('/summary/:id', async (req, res) => {
                 cardAmount += transaction.amount;
             }
         });
-       let finalCashAmount = cashAmount + openingAmount;
+       let finalCashAmount = cashAmount + openingAmount +cardAmount;
         res.json({ cashAmount, cardAmount, finalCashAmount,openingAmount });
 
 
