@@ -367,14 +367,34 @@ router.get('/individual', async (req, res) => {
     // Initialize an array to hold the results
     const results = [];
 
-    // Fetch related ReservationxClientes for each reservation
+    // Fetch related ReservationXClientes for each reservation
     for (const reservation of reservations) {
       const reservationClients = await ReservationXCliente.find({ reservation: reservation._id })
-      .populate('client', 'firstName lastName');
-      //reservationClients.clientName = reservationClients.client.firstName + " " + reservationClients.client.lastName;
+        .populate('client', 'firstName lastName');
+
+      // Initialize an array to hold the ReservationXCliente details
+      const reservationClientsDetails = [];
+
+      for (const reservationClient of reservationClients) {
+        const client = reservationClient.client;
+        if (client) {
+          reservationClientsDetails.push({
+            reservationClient,
+            clientName: `${client.firstName} ${client.lastName}`
+          });
+        } else {
+          reservationClientsDetails.push({
+            reservationClient,
+            clientName: 'Unknown'
+          });
+        }
+      }
+
+      // Clone the reservation to avoid mutating the original object
+      const reservationClone = reservation.toObject();
       results.push({
-        reservation,
-        reservationClients
+        reservation: reservationClone,
+        reservationClients: reservationClientsDetails
       });
     }
 
@@ -384,6 +404,7 @@ router.get('/individual', async (req, res) => {
     res.status(500).json({ message: "Error fetching individual reservations" });
   }
 });
+
 
 
 // PUT route to update a note
