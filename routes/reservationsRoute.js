@@ -371,7 +371,7 @@ router.get('/individual', async (req, res) => {
     for (const reservation of reservations) {
       const reservationClients = await ReservationXCliente.find({ reservation: reservation._id })
       .populate('client', 'firstName lastName');
-      reservationClients.clientName = reservationClients.client.firstName + " " + reservationClients.client.lastName;
+      //reservationClients.clientName = reservationClients.client.firstName + " " + reservationClients.client.lastName;
       results.push({
         reservation,
         reservationClients
