@@ -370,7 +370,7 @@ router.get('/individual', async (req, res) => {
     // Fetch related ReservationxClientes for each reservation
     for (const reservation of reservations) {
       const reservationClients = await ReservationXCliente.find({ reservation: reservation._id })
-      .populate('client', 'first_name last_name');
+      .populate('client');
       results.push({
         reservation,
         reservationClients
