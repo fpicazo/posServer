@@ -38,6 +38,8 @@ router.post('/', async (req, res) => {
      andadortotal = 0, eventosmoney = 0, eventosqty = 0, eventostotal = 0;
 
     concept.forEach(product => {
+
+      console.log("product + ", product);
       const { name, price, quantity } = product;
       const total = price * quantity;
 
@@ -52,7 +54,8 @@ router.post('/', async (req, res) => {
           juegosqty += quantity;
           juegostotal += total;
           break;
-        case 'Cabinas Inmersivas' || 'Cabinas Inmersivas 30m':
+        case 'Cabinas Inmersivas' :
+        case 'Cabinas Inmersivas 15m':
           cabinamoney += price;
           cabinaqty += quantity;
           cabinatotal += total;
@@ -75,6 +78,7 @@ router.post('/', async (req, res) => {
         default:
           console.log(`Product ${name} does not match any category.`);
       }
+      console.log("cabinatotal + ", cabinatotal);
     });
 
 
@@ -118,6 +122,7 @@ router.post('/', async (req, res) => {
 
     
     res.status(201).json(newTransaction);
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error adding Transaction" });

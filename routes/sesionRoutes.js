@@ -161,6 +161,7 @@ router.get('/summary/:id', async (req, res) => {
             }
         });
        let finalCashAmount = cashAmount + openingAmount +cardAmount;
+       
         res.json({ cashAmount, cardAmount, finalCashAmount,openingAmount });
 
 
@@ -195,6 +196,22 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+router.get('/sessiontransactions/:id', async (req, res) => {
+    const { id } = req.params;
+    console.log("id " + id);
+    try {
+        const sesions = await Sesion.findById(id);
+        if (!sesions) {
+            return res.status(404).json({ message: "Sesion not found" });
+        }
+        const transactions = await Transaction.find({ session: id });
+        res.json(transactions);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching Sesion" });
+    }
+}
+);
 
 router.post('/testing', async (req, res) => {
     try{
