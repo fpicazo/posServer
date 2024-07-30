@@ -300,18 +300,19 @@ router.get('/', async (req, res) => {
 
   // Set startDate to provided value or today's date if not provided
   if (startDate) {
-    const startOfDay = moment(startDate).startOf('day').toDate();
-    const endOfDay = moment(startDate).endOf('day').toDate();
+    const startOfDay = moment.tz(startDate, Timezone).startOf('day').toDate();
+    const endOfDay = moment.tz(startDate, Timezone).endOf('day').toDate();
     query.startDate = { $gte: startOfDay, $lte: endOfDay };
   } else {
     // If startDate is not provided, use today's date
-    const todayStart = moment().startOf('day').toDate();
-    const todayEnd = moment().endOf('day').toDate();
+    const todayStart = moment.tz(Timezone).startOf('day').toDate();
+    const todayEnd = moment.tz(Timezone).endOf('day').toDate();
     query.startDate = { $gte: todayStart, $lte: todayEnd };
   }
 
   try {
     const reservations = await Reservation.find(query);
+    console.log("RR " + JSON.stringify(reservations));
     
     // Add the 'time' field to each reservation
     const reservationsWithTime = reservations.map(reservation => ({
