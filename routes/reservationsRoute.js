@@ -54,14 +54,21 @@ router.post('/', async (req, res) => {
     let status = "pending";
     let modo = req.body.modo;
     let location = req.body.location;
+    let startDate;
     if (!location) {
       location = "Tepic";
     }
 
+    if (!time) {
+      startDate = moment.tz(date, Timezone).toDate();
+    } else {
 
     const dateTimeString = `${date} ${time}`;
     console.log("dateTimeString " + dateTimeString);
-    const startDate = moment.tz(dateTimeString, Timezone).toDate();
+    startDate = moment.tz(dateTimeString, Timezone).toDate();
+    }
+
+
     console.log("startDate " + startDate);
     const endDate = moment.tz(startDate, Timezone).add(30, 'minutes').toDate(); // Add 30 minutes to startDate
 
@@ -104,6 +111,8 @@ router.post('/', async (req, res) => {
     console.log("game " + game);
 
     const maxClients = catalogoJuegos.find(juego => juego.name === game).maxPlayers;
+
+    console.log("StartDate " + startDate);
 
     // Check if reservation exists
     let existingReservation = await Reservation.findOne({ startDate, location });
