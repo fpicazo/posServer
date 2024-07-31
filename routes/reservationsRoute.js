@@ -3,6 +3,7 @@ const router = express.Router();
 const Reservation = require('../models/Reservation');
 const Client = require('../models/Client');
 const ReservationXCliente = require('../models/ReservationXCliente');
+const Chekin = require('../models/checkinModel');
 const moment = require('moment-timezone');
 const catalogoJuegos = require('../configuration/maxplayers');
 const { updateTokenHour } = require('../utils/checkAndRefreshToken');
@@ -46,14 +47,24 @@ const createPaymentLink = async (res, data) => {
 router.post('/', async (req, res) => {
   console.log(req.body);
   try {
-    const { phone, firstName, lastName, email, date, players, location,amountIndiv,modo } = req.body;
+    const { phone, firstName, lastName, email, date,time, players, amountIndiv } = req.body;
     console.log("date " + date);
-    var game = req.body.game;
-    var clientId = req.body.clientId;
+    let game = req.body.game;
+    let clientId = req.body.clientId;
+    let status = "pending";
+    let modo = req.body.modo;
+    let location = req.body.location;
+    if (!location) {
+      location = "Tepic";
+    }
 
-    const startDate = moment.tz(date,Timezone).toDate();
-    const endDate = moment.tz(date, Timezone).add(30, 'minutes').toDate(); // Add 30 minutes to startDate
-    //console.log("startDate " + startDate);
+
+    const dateTimeString = `${date} ${time}`;
+    console.log("dateTimeString " + dateTimeString);
+    const startDate = moment.tz(dateTimeString, Timezone).toDate();
+    console.log("startDate " + startDate);
+    const endDate = moment.tz(startDate, Timezone).add(30, 'minutes').toDate(); // Add 30 minutes to startDate
+
     let existingClient;
     if (clientId) {
       existingClient = await Client.findById(clientId);
@@ -84,46 +95,87 @@ router.post('/', async (req, res) => {
     if (!game) {
       game = "Rancho Embrujado";
     }
+
+    if (!modo || modo !== "online") {
+      modo = "pos";
+      status = "booked";
+    }
+
     console.log("game " + game);
 
-    var maxClients = catalogoJuegos.find(juego => juego.name === game).maxPlayers;
+    const maxClients = catalogoJuegos.find(juego => juego.name === game).maxPlayers;
 
-    const newReservation = new Reservation({
-      date,
-      location,
-      participantsbooked: players,
-      availableparticipants: maxClients - players,
-      startDate,
-      endDate,
-      game,
-      amountIndiv,
-      modo
-    });
+    // Check if reservation exists
+    let existingReservation = await Reservation.findOne({ startDate, location });
 
-    console.log(newReservation);
+    if (!existingReservation) {
+      // Create new reservation if it doesn't exist
+      const newReservation = new Reservation({
+        date,
+        location,
+        participantsbooked: players,
+        availableparticipants: maxClients - players,
+        startDate,
+        endDate,
+        game,
+        amountIndiv,
+        modo
+      });
 
-    await newReservation.save();
+      console.log(newReservation);
+      await newReservation.save();
 
-    const newReservationXCliente = new ReservationXCliente({
-      players,
-      date,
-      location,
-      startDate,
-      endDate,
-      game,
-      client: clientId,
-      reservation: newReservation._id,
-      amountIndiv,
-      modo,
-      status: "pending"
+      const newReservationXCliente = new ReservationXCliente({
+        players,
+        date,
+        location,
+        startDate,
+        endDate,
+        game,
+        client: clientId,
+        reservation: newReservation._id,
+        amountIndiv,
+        modo,
+        status: status
+      });
 
-    });
+      console.log("New reservation cliente " + newReservationXCliente);
+      const createreservacioncliente = newReservationXCliente.save();
+      console.log("New reservation cliente220 " + createreservacioncliente);
 
-    console.log("New reservation cliente " + newReservationXCliente);
+      res.status(201).json(newReservation);
+    } else {
+      // Update existing reservation if it exists
+      const newPlayersNumber = existingReservation.participantsbooked + players;
+      existingReservation = await Reservation.findByIdAndUpdate(
+        existingReservation._id,
+        {
+          participantsbooked: newPlayersNumber,
+          availableparticipants: maxClients - newPlayersNumber
+        },
+        { new: true }
+      );
 
-    await newReservationXCliente.save();
+      const newReservationXCliente = new ReservationXCliente({
+        players,
+        date,
+        location,
+        startDate,
+        endDate,
+        game,
+        client: clientId,
+        reservation: existingReservation._id,
+        amountIndiv,
+        modo,
+        status: status
+      });
 
-    res.status(201).json(newReservation);
+      console.log("Updated reservation cliente " + newReservationXCliente);
+      const createreservacioncliente = await newReservationXCliente.save();
+      console.log("Updated reservation cliente2 " + createreservacioncliente);
+
+      res.status(200).json(existingReservation);
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error adding Reservation" });
@@ -215,6 +267,42 @@ router.post('/addreservationclient', async (req, res) => {
   }
 });
 
+router.post('/checkin', async (req, res) => {
+  //console.log(req.body);
+ const {birthDate,email,name,phone,signatureImg,idreservacion } = req.body;
+ const gameName = req.body.game.name;
+ console.log("gameName " + gameName);
+ const gametime = req.body.game.time;
+  var location = req.body.location;
+  const date = req.body.date;
+
+  if (!location) {
+    location = "Tepic";
+  }
+
+  payload = {
+    "name": name,
+    "email": email,
+    "phone": phone,
+    "birthDate": birthDate,
+    "signatureImg": signatureImg,
+    "gameName": gameName,
+    "gametime": gametime,
+    "location": location,
+    "date": date,
+    idreservacion : idreservacion
+  };
+try {
+
+  await Chekin.create(payload);
+  res.status(201).json(payload);
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ message: "Error adding checkin" });
+}
+
+
+});
 
 // GET route to fetch all notes
 router.get('/avaibility', async (req, res) => {
@@ -364,15 +452,18 @@ router.get('/individual', async (req, res) => {
     const reservations = await Reservation.find({
       startDate: { $gte: startOfDay, $lte: endOfDay }
     });
+    console.log("Reservacion " + JSON.stringify(reservations));
 
     // Initialize an array to hold the results
     const results = [];
 
     // Fetch related ReservationXClientes for each reservation
     for (const reservation of reservations) {
+      console.log("Reservacion " + JSON.stringify(reservation._id));
       const reservationClients = await ReservationXCliente.find({ reservation: reservation._id })
         .populate('client', 'firstName lastName');
 
+        //if (reservationClients.status === 'booked') {
       // Initialize an array to hold the ReservationXCliente details
       const reservationClientsDetails = [];
 
@@ -388,7 +479,7 @@ router.get('/individual', async (req, res) => {
             reservationClient,
             clientName: 'Unknown'
           });
-        }
+       // }
       }
 
       // Clone the reservation to avoid mutating the original object
@@ -397,6 +488,7 @@ router.get('/individual', async (req, res) => {
         reservation: reservationClone,
         reservationClients: reservationClientsDetails
       });
+    }
     }
 
     res.json(results);
