@@ -419,7 +419,7 @@ router.get('/', async (req, res) => {
     // Add the 'time' field to each reservation
     const reservationsWithTime = reservations.map(reservation => ({
       ...reservation.toObject(),
-      time: moment(reservation.startDate).format('HH:mm')
+      time: moment.tz(reservation.startDate,Timezone).format('HH:mm')
     }));
 
     res.json(reservationsWithTime);
