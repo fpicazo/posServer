@@ -392,6 +392,7 @@ router.get('/avaibility', async (req, res) => {
 // GET route to fetch all notes
 router.get('/', async (req, res) => {
   const { startDate } = req.query;
+  console.log("startDate " + startDate);
 
   const query = {};
 
@@ -407,9 +408,13 @@ router.get('/', async (req, res) => {
     query.startDate = { $gte: todayStart, $lte: todayEnd };
   }
 
+  console.log("query " + JSON.stringify(query));
+
+ 
+
   try {
     const reservations = await Reservation.find(query);
-    console.log("RR " + JSON.stringify(reservations));
+    console.log("RR / " + JSON.stringify(reservations));
     
     // Add the 'time' field to each reservation
     const reservationsWithTime = reservations.map(reservation => ({

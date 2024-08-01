@@ -87,8 +87,10 @@ const saveDataZoho = async (req, res) => {
         const response = await axios.post('https://books.zoho.com/api/v3/invoices?organization_id=719250654', invoiceData, { headers });
 
         // Respond with Zoho's API response
+        const id_invoice = response.data.invoice.invoice_id;
+        await axios.post('https://www.zohoapis.com/books/v3/invoices/'+id_invoice+'/status/sent?organization_id=719250654', { headers });
 
-        res.json(lineItems);
+        res.json(response);
     } catch (error) {
         console.error(error.response ? error.response.data : error);
         res.status(500).json({ message: "Error processing the request" });

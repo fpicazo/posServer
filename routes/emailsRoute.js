@@ -133,7 +133,11 @@ router.post('/cierre', async (req, res) => {
                             {
                                 "user_name": "Virtuality World",
                                 "email": "ricardo.garate@maxadhoc.com"
-                            }
+                            },
+                            {
+                                "user_name": "Ventas MaxAdhoc",
+                                "email": "ventas@maxadhoc.com"
+                            }  
 
                     ],
                     "subject": "Cierre de sesion " + userName + " " + new Date().toLocaleDateString(),

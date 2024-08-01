@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const Transactions = require('../models/Transaction');
 const Client = require('../models/Client');
+const moment = require('moment-timezone');
+const Timezone = "America/Hermosillo";
+
 
 // POST route to add a new note
 router.post('/', async (req, res) => {
@@ -171,14 +174,30 @@ router.get('/weekly-summary', async (req, res) => {
 
 
 
-// GET route to fetch all notes
 router.get('/', async (req, res) => {
+  const { startDate, endDate } = req.query;
+  console.log("QUERY ", req.query);
+  const query = {};
+  console.log("startDate ", moment.tz(startDate, Timezone).toDate());
+  console.log("endDate ", moment.tz(endDate, Timezone).toDate());
+  if (startDate) {
+    query.date = { $gte: moment.tz(startDate, Timezone).toDate() };
+  }
+
+  if (endDate) {
+    if (!query.date) {
+      query.date = {};
+    }
+    query.date.$lte = moment.tz(endDate, 'America/Mexico_City').endOf('day').toDate();
+
+  }
+
   try {
-      const transactions = await Transactions.find().sort({ createdAt: -1 }); // replace `createdAt` with your date field
-      res.json(transactions);
+    const transactions = await Transactions.find(query).sort({ createdAt: -1 }); // replace `createdAt` with your date field
+    res.json(transactions);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error fetching Transaction" });
+    console.error(error);
+    res.status(500).json({ message: "Error fetching transactions" });
   }
 });
 
@@ -207,6 +226,7 @@ router.put('/:id', async (req, res) => {
 
 // DELETE route to remove a note
 router.delete('/:id', async (req, res) => {
+  console.log("DELETE" , req.params);
   try {
     const { id } = req.params;
     const transaction = await Transactions.findByIdAndDelete(id);
