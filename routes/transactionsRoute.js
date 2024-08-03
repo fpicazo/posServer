@@ -8,11 +8,12 @@ const Timezone = "America/Hermosillo";
 
 // POST route to add a new note
 router.post('/', async (req, res) => {
+  console.log("New transaccion", req.body);
   try {
 
     
     const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia } = req.body;
-    console.log("BODY ", req.body);
+    console.log("BODY new transaccion ", req.body);
     var concept = req.body?.concept;
     let { date } = req.body; // Declare date with let so it can be reassigned
     

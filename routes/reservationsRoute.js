@@ -45,7 +45,7 @@ const createPaymentLink = async (res, data) => {
 
 // POST route to add a new note
 router.post('/', async (req, res) => {
-  console.log(req.body);
+  console.log("New reservacion" + req.body);
   try {
     const { phone, firstName, lastName, email, date,time, players, amountIndiv } = req.body;
     console.log("date " + date);
@@ -189,6 +189,7 @@ router.post('/', async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Error adding Reservation" });
   }
+  
 });
 
 
@@ -374,7 +375,7 @@ router.get('/avaibility', async (req, res) => {
           availableparticipants: reservation.status === 'booked' ? reservation.availableparticipants : undefined,
           game: reservation.game,
 
-        };
+        }; 
       } else {
         return { time: slot };
       }
