@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Transactions = require('../models/Transaction');
+const TransactionEliminadas = require('../models/TransactionEliminadas');
 const Client = require('../models/Client');
 const moment = require('moment-timezone');
 const Timezone = "America/Hermosillo";
@@ -202,6 +203,34 @@ router.get('/', async (req, res) => {
   }
 });
 
+
+router.get('/eliminadas', async (req, res) => {
+  const { startDate, endDate } = req.query;
+  console.log("QUERY ", req.query);
+  const query = {};
+  console.log("startDate ", moment.tz(startDate, Timezone).toDate());
+  console.log("endDate ", moment.tz(endDate, Timezone).toDate());
+  if (startDate) {
+    query.date = { $gte: moment.tz(startDate, Timezone).toDate() };
+  }
+
+  if (endDate) {
+    if (!query.date) {
+      query.date = {};
+    }
+    query.date.$lte = moment.tz(endDate, 'America/Mexico_City').endOf('day').toDate();
+
+  }
+
+  try {
+    const transactions = await TransactionEliminadas.find(query).sort({ createdAt: -1 }); // replace `createdAt` with your date field
+    res.json(transactions);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching transactions" });
+  }
+});
+
 // PUT route to update a note
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
@@ -227,21 +256,30 @@ router.put('/:id', async (req, res) => {
 
 // DELETE route to remove a note
 router.delete('/:id', async (req, res) => {
-  console.log("DELETE" , req.params);
+  console.log("DELETE", req.params);
   try {
     const { id } = req.params;
-    const transaction = await Transactions.findByIdAndDelete(id);
 
-    if (!transaction) {
-      return res.status(404).json({ message: "transaction not found" });
+    // Find the transaction by ID
+    const searchTransaction = await Transactions.findById(id);
+
+    // Check if the transaction exists
+    if (!searchTransaction) {
+      return res.status(404).json({ message: "Transaction not found" });
     }
 
-    res.json(transaction);
+    // Create a new document in the TransactionEliminadas collection
+    const newTransactionEliminadas = new TransactionEliminadas(searchTransaction.toObject());
+    await newTransactionEliminadas.save(); // Save the deleted transaction to the collection
+
+    // Delete the transaction from the Transactions collection
+    const transaction = await Transactions.findByIdAndDelete(id);
+
+    res.json(transaction); // Respond with the deleted transaction
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error deleting transaction" });
   }
-}
-);
+});
 
 module.exports = router;
