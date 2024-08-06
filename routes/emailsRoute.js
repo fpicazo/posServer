@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { updateTokenHour } = require('../utils/checkAndRefreshToken');
 const axios = require('axios');
+const moment = require('moment-timezone');
+const Timezone = "America/Hermosillo";
 
 
 
@@ -92,7 +94,7 @@ router.post('/cierre', async (req, res) => {
     <br><br>
     Cierre de caja de ${userName} en Virtuality World ${location}.
     <br><br>
-    Fecha: ${new Date().toLocaleDateString()}
+    Fecha: ${moment.tz(timezone).format('DD/MM/YYYY')}
     <br>
     Cantidad de cierre: $${closingAmount}
     <br>
