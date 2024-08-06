@@ -94,7 +94,7 @@ router.post('/cierre', async (req, res) => {
     <br><br>
     Cierre de caja de ${userName} en Virtuality World ${location}.
     <br><br>
-    Fecha: ${moment.tz(timezone).format('DD/MM/YYYY')}
+    Fecha: ${moment.tz(Timezone).format('DD/MM/YYYY')}
     <br>
     Cantidad de cierre: $${closingAmount}
     <br>
