@@ -47,7 +47,7 @@ const createPaymentLink = async (res, data) => {
 router.post('/', async (req, res) => {
   console.log("New reservacion" + req.body);
   try {
-    const { phone, firstName, lastName, email, date,time, players, amountIndiv } = req.body;
+    const { phone, firstName, lastName, email, date,time, players, amountIndiv,idinterno } = req.body;
     console.log("date " + date);
     let game = req.body.game;
     let clientId = req.body.clientId;
@@ -128,7 +128,8 @@ router.post('/', async (req, res) => {
         endDate,
         game,
         amountIndiv,
-        modo
+        modo,
+        idinterno,
       });
 
       console.log(newReservation);
@@ -145,7 +146,8 @@ router.post('/', async (req, res) => {
         reservation: newReservation._id,
         amountIndiv,
         modo,
-        status: status
+        status: status,
+        idinterno,
       });
 
       console.log("New reservation cliente " + newReservationXCliente);
@@ -176,7 +178,8 @@ router.post('/', async (req, res) => {
         reservation: existingReservation._id,
         amountIndiv,
         modo,
-        status: status
+        status: status,
+        idinterno,
       });
 
       console.log("Updated reservation cliente " + newReservationXCliente);
@@ -320,7 +323,7 @@ router.get('/avaibility', async (req, res) => {
   console.log(req.query);
 
   let startOfDay = moment.tz(`${date} 11:00`,Timezone);
-  let endOfDay = moment.tz(`${date} 21:00`, Timezone);
+  let endOfDay = moment.tz(`${date} 22:00`, Timezone);
   let currentTime = moment.tz(Timezone);
   if (currentTime.isAfter(startOfDay)) {
     startOfDay = currentTime;

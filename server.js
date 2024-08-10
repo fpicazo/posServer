@@ -12,6 +12,7 @@ const SesionRoutes = require('./routes/sesionRoutes');
 const PaymentRoutes = require('./routes/paymentRoute');
 const productRoutes = require('./routes/productsRoute');
 const emailRoutes = require('./routes/emailsRoute');
+const settingsRoute = require('./routes/settingsRoute');
 const saveDataZoho = require('./utils/saveTransactionsZoho');
 
 
@@ -38,6 +39,7 @@ app.use('/payments', PaymentRoutes);
 app.use('/products', productRoutes);
 app.use('/emails', emailRoutes);
 app.post('/saveDataZoho', saveDataZoho);
+app.use('/settings', settingsRoute);
 
 
 

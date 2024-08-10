@@ -54,11 +54,11 @@ const saveDataZoho = async (req, res) => {
             const { item_id, name } = getItemIdByConcept(conceptName);
 
             const moneyKey = totalKey.replace('total', '');
-
+            const amountConcept = totals[totalKey];
             lineItems.push({
                 item_id: item_id,
                 name: name,
-                rate: totals[totalKey],
+                rate: amountConcept,
                 quantity: 1
             });
         });
@@ -88,9 +88,8 @@ const saveDataZoho = async (req, res) => {
 
         // Respond with Zoho's API response
         const id_invoice = response.data.invoice.invoice_id;
-        await axios.post('https://www.zohoapis.com/books/v3/invoices/'+id_invoice+'/status/sent?organization_id=719250654', { headers });
-
-        res.json(response);
+        const maksent = await axios.post('https://books.zoho.com/api/v3/invoices/'+id_invoice+'/status/sent?organization_id=719250654', null,{ headers });
+        res.json(maksent);
     } catch (error) {
         console.error(error.response ? error.response.data : error);
         res.status(500).json({ message: "Error processing the request" });

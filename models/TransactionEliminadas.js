@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 
 const TransactionEliminadasSchema = new mongoose.Schema({
+    location: { type: String, required: true },
     date: { type: Date, required: true },
     amount: { type: Number, required: true },
     concept: { type: Array, required: true },
@@ -38,7 +39,9 @@ const TransactionEliminadasSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'Session', 
       required: false
-    }
+    },
+    razonEliminacion: { type: String, required: true },
+    
   }, { timestamps: true });
 
 const TransactionEliminadas = mongoose.model('TransactionEliminadas', TransactionEliminadasSchema);

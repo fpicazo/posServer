@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 
 const TransaccionSchema = new mongoose.Schema({
+    location: { type: String, required: true },
     date: { type: Date, required: true },
     amount: { type: Number, required: true },
     concept: { type: Array, required: true },
@@ -29,6 +30,7 @@ const TransaccionSchema = new mongoose.Schema({
     cortesiaRango: { type: String, required: false },
     nameUserCortesia: { type: String, required: false },
     paymentMode: { type: String, required: true },
+    idinterno: { type: String, required: false },
     client: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'Client', 

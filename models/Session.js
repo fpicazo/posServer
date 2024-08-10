@@ -8,6 +8,7 @@ openingAmount: { type: Number, required: false },
 closingAmount: { type: Number, required: false },
 cashAmount :{ type: Number, required: false },
 cardAmount: { type: Number, required: false },
+location: { type: String, required: false },
 user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }
 }, { timestamps: true
 

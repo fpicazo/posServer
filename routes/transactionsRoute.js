@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Transactions = require('../models/Transaction');
 const TransactionEliminadas = require('../models/TransactionEliminadas');
+const Reservation = require('../models/Reservation');
+const ReservationXCliente = require('../models/ReservationXCliente');
 const Client = require('../models/Client');
 const moment = require('moment-timezone');
 const Timezone = "America/Hermosillo";
@@ -13,7 +15,7 @@ router.post('/', async (req, res) => {
   try {
 
     
-    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia } = req.body;
+    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno } = req.body;
     console.log("BODY new transaccion ", req.body);
     var concept = req.body?.concept;
     let { date } = req.body; // Declare date with let so it can be reassigned
@@ -124,6 +126,15 @@ router.post('/', async (req, res) => {
         });
 
         await newTransaction.save();
+
+        if (idinterno) {
+          const searchReservacionporcliente = await ReservationXCliente.findOne({ idinterno: idinterno });
+          if (searchReservacionporcliente) {
+            searchReservacionporcliente.transaction = newTransaction._id;
+            await searchReservacionporcliente.save();
+          }
+        }
+
 
     
     res.status(201).json(newTransaction);
@@ -256,26 +267,58 @@ router.put('/:id', async (req, res) => {
 
 // DELETE route to remove a note
 router.delete('/:id', async (req, res) => {
-  console.log("DELETE", req.params);
+  //console.log("DELETE", req.params);
   try {
     const { id } = req.params;
 
     // Find the transaction by ID
     const searchTransaction = await Transactions.findById(id);
+    //console.log("searchTransaction", searchTransaction);
+  
 
     // Check if the transaction exists
     if (!searchTransaction) {
       return res.status(404).json({ message: "Transaction not found" });
     }
-
+    
     // Create a new document in the TransactionEliminadas collection
     const newTransactionEliminadas = new TransactionEliminadas(searchTransaction.toObject());
     await newTransactionEliminadas.save(); // Save the deleted transaction to the collection
-
+ 
     // Delete the transaction from the Transactions collection
     const transaction = await Transactions.findByIdAndDelete(id);
+   
+    // search reservacionxclientes y eliminarla. tambien buscar la reservacion y eliminarla y no tiene otra reservacionxclientes
+    const searchReservacionporcliente = await ReservationXCliente.findOne({ idinterno: searchTransaction?.idinterno });
+    //console.log("searchReservacionporcliente1", searchReservacionporcliente);
+    if (searchReservacionporcliente) {
+      //const searchReservacion = await ReservationXCliente.findByIdAndDelete(searchReservacionporcliente._id);
+      const searchReservacion = await Reservation.findById(searchReservacionporcliente.reservation);
+      //console.log("searchReservacion", searchReservacion);
+      if (searchReservacion) {
+        //console.log("Id reser", searchReservacion._id);
+        const searchReservacionxclientes = await ReservationXCliente.find({ reservation: searchReservacion?._id });
+        //console.log("searchReservacionxclientes2", searchReservacionxclientes);
+        if (searchReservacionxclientes.length == 1) {
+          //console.log("Eliminando reservacion ", searchReservacion._id);
+          await Reservation.findByIdAndDelete(searchReservacion._id);
+          await ReservationXCliente.findByIdAndDelete(searchReservacionporcliente._id);
+        }
+        else {
+          //console.log("No se elimina reservacion ", searchReservacion._id);
+          var newbooked = searchReservacion.participantsbooked - searchReservacionporcliente.players;
+          var newavailible = searchReservacion.availableparticipants + searchReservacionporcliente.players;
+          searchReservacion.booked = newbooked;
+          searchReservacion.available = newavailible;
+          console.log("newbooked", newbooked, "newavailible", newavailible);
+          await searchReservacion.save();
+          await ReservationXCliente.findByIdAndDelete(searchReservacionporcliente._id);
 
-    res.json(transaction); // Respond with the deleted transaction
+        }
+      }
+    }
+      
+    res.json(searchTransaction); // Respond with the deleted transaction
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error deleting transaction" });

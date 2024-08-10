@@ -19,10 +19,12 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: "Authentication failed" });
         }
 
+           
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Authentication failed" });
         }
+      
 
         const token = jwt.sign({ email }, process.env.SECRET_KEY, { expiresIn: '48h' });
         console.log("Token created " + token);

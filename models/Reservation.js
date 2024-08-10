@@ -9,7 +9,9 @@ endDate: { type: Date, required: false },
 participantsbooked: { type: Number, required: false },
 availableparticipants: { type: Number, required: false },
 comment: { type: String, required: false },
+idinterno: { type: String, required: false },
 status: { type: String, required: true, default:"booked" }, // booked or cancelled or pending
+transaction: { type: mongoose.Schema.Types.ObjectId, ref: 'Transaction', required: false },
 }, { timestamps: true
 
 });
