@@ -142,7 +142,7 @@ router.post('/cierre', async (req, res) => {
                             }  
 
                     ],
-                    "subject": "Cierre de sesion " + userName + " " + new Date().toLocaleDateString(),
+                    "subject": "Cierre de sesion " + userName + " " + moment.tz(Timezone).format('DD/MM/YYYY'),
                     "content": messageContent,
                     "org_email": true,
                     "template": {
