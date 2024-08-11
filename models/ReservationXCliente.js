@@ -4,7 +4,7 @@ const ReservationXClienteSchema = new mongoose.Schema({
 players: {  type: Number, required: true  },
 date: { type: Date, required: true },
 game : { type: String, required: false },
-location: { type: String, required: false },
+location: { type: String, required: false,default:"Tepic" },
 startDate: { type: Date, required: false },
 endDate: { type: Date, required: false },
 client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: false },

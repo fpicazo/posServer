@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ReservationSchema = new mongoose.Schema({
 date: { type: Date, required: true },
 game : { type: String, required: false },
-location: { type: String, required: false },
+location: { type: String, required: false,default:"Tepic" },
 startDate: { type: Date, required: false },
 endDate: { type: Date, required: false },
 participantsbooked: { type: Number, required: false },
