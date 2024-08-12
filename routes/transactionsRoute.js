@@ -303,9 +303,11 @@ router.delete('/:id', async (req, res) => {
         const searchReservacionxclientes = await ReservationXCliente.find({ reservation: searchReservacion?._id });
         //console.log("searchReservacionxclientes2", searchReservacionxclientes);
         if (searchReservacionxclientes.length == 1) {
-          //console.log("Eliminando reservacion ", searchReservacion._id);
-          await Reservation.findByIdAndDelete(searchReservacion._id);
-          await ReservationXCliente.findByIdAndDelete(searchReservacionporcliente._id);
+          console.log("Eliminando reservacion ", searchReservacion._id);
+          const deleteresa = await Reservation.findByIdAndDelete(searchReservacion._id);
+          console.log("Eliminando reservacion ", deleteresa);
+          const deleteresaporcliente = await ReservationXCliente.findByIdAndDelete(searchReservacionporcliente._id);
+          console.log("Eliminando reservacion ", deleteresaporcliente);
         }
         else {
           //console.log("No se elimina reservacion ", searchReservacion._id);
