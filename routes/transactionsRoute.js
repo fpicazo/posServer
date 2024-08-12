@@ -270,6 +270,9 @@ router.delete('/:id', async (req, res) => {
   //console.log("DELETE", req.params);
   try {
     const { id } = req.params;
+    const { razonEliminacion } = req.query;
+
+    
 
     // Find the transaction by ID
     const searchTransaction = await Transactions.findById(id);
@@ -280,7 +283,7 @@ router.delete('/:id', async (req, res) => {
     if (!searchTransaction) {
       return res.status(404).json({ message: "Transaction not found" });
     }
-    
+    searchTransaction.razonEliminacion = razonEliminacion;
     // Create a new document in the TransactionEliminadas collection
     const newTransactionEliminadas = new TransactionEliminadas(searchTransaction.toObject());
     await newTransactionEliminadas.save(); // Save the deleted transaction to the collection

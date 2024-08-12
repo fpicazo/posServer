@@ -40,7 +40,7 @@ const TransactionEliminadasSchema = new mongoose.Schema({
       ref: 'Session', 
       required: false
     },
-    razonEliminacion: { type: String, required: true },
+    razonEliminacion: { type: String },
     
   }, { timestamps: true });
 
