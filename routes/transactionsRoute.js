@@ -119,7 +119,8 @@ router.post('/', async (req, res) => {
       eventostotal,
       cortesiaMotivo,
       cortesiaRango,
-      nameUserCortesia
+      nameUserCortesia,
+      idinterno,
 
 
 
@@ -290,14 +291,17 @@ router.delete('/:id', async (req, res) => {
  
     // Delete the transaction from the Transactions collection
     const transaction = await Transactions.findByIdAndDelete(id);
-   
+   console.log("idinterno", searchTransaction?.idinterno ); 
+   if (!searchTransaction?.idinterno) {
+    return res.status(404).json({ message: "idinterno not found" });
+  }
     // search reservacionxclientes y eliminarla. tambien buscar la reservacion y eliminarla y no tiene otra reservacionxclientes
     const searchReservacionporcliente = await ReservationXCliente.findOne({ idinterno: searchTransaction?.idinterno });
-    //console.log("searchReservacionporcliente1", searchReservacionporcliente);
+    console.log("searchReservacionporcliente1", searchReservacionporcliente);
     if (searchReservacionporcliente) {
       //const searchReservacion = await ReservationXCliente.findByIdAndDelete(searchReservacionporcliente._id);
       const searchReservacion = await Reservation.findById(searchReservacionporcliente.reservation);
-      //console.log("searchReservacion", searchReservacion);
+      console.log("searchReservacion", searchReservacion);
       if (searchReservacion) {
         //console.log("Id reser", searchReservacion._id);
         const searchReservacionxclientes = await ReservationXCliente.find({ reservation: searchReservacion?._id });
