@@ -209,4 +209,84 @@ router.post('/error', async (req, res) => {
 });
 
 
+router.post('/reservation', async (req, res) => {
+    const { clientName, date,horario,players, amount, game } = req.body
+    const { lastTokenHour, token } = await updateTokenHour();
+    var location = req.body.location || "Tepic Plaza Forum";
+
+    const messageContent = `
+    Hola,
+    <br><br>
+    Nueva reserva de ${clientName} en Virtuality World ${location}.
+    <br><br>
+    Fecha: ${date} ${horario}
+    <br>
+    Monto Pagado $${amount}
+    <br>
+    Jugadores: ${players}
+    <br>
+    Mapa: ${game}
+    <br><br>
+    Saludos cordiales,
+    `;
+
+
+    try {
+    const headers = {
+        'Authorization': `Zoho-oauthtoken ${token}`
+        };
+
+    emailData = {
+            "data": [
+                {
+                    "from": {
+                        "user_name": "Virtuality World",
+                        "email": "ricardo.garate@maxadhoc.com"
+                    },
+                    "to": [
+                        {
+                            "user_name": "Ventas MaxAdhoc",
+                            "email": "flavienpicazo@gmail.com"
+                        } 
+
+                        /*
+                        {
+                            "user_name": "Virtuality World",
+                            "email": "info@virtualityworld.com.mx"
+                        },
+                            {
+                                "user_name": "Virtuality World",
+                                "email": "ricardo.garate@maxadhoc.com"
+                            },
+                            {
+                                "user_name": "Ventas MaxAdhoc",
+                                "email": "ventas@maxadhoc.com"
+                            }  
+                                */
+
+                    ],
+                    "subject": "Nueva reserva " + clientName + " " + moment.tz(date,Timezone).format('DD/MM/YYYY'),
+                    "content": messageContent,
+                    "org_email": true,
+                    "template": {
+                        "id": "3801110000045094299"
+                    }
+                }
+            ]
+        }
+
+    // Send invoice data to Zoho
+    const response = await axios.post('https://www.zohoapis.com/crm/v6/Contacts/3801110000049222092/actions/send_mail', emailData, { headers });
+
+    // Respond with Zoho's API response
+    console.log("Resp email " +response.data);
+    res.json(response.data);
+} catch (error) {
+    console.error(error.response ? error.response.data : error);
+    res.status(500).json({ message: "Error processing the request" });
+}
+});
+
+
+
 module.exports = router;

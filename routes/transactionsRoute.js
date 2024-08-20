@@ -268,6 +268,7 @@ router.put('/:id', async (req, res) => {
 
 // DELETE route to remove a note
 router.delete('/:id', async (req, res) => {
+
   //console.log("DELETE", req.params);
   try {
     const { id } = req.params;
@@ -284,16 +285,20 @@ router.delete('/:id', async (req, res) => {
     if (!searchTransaction) {
       return res.status(404).json({ message: "Transaction not found" });
     }
+    console.log("RAZ " + razonEliminacion)
     searchTransaction.razonEliminacion = razonEliminacion;
+    console.log("searchTransaction", searchTransaction);
+
     // Create a new document in the TransactionEliminadas collection
     const newTransactionEliminadas = new TransactionEliminadas(searchTransaction.toObject());
-    await newTransactionEliminadas.save(); // Save the deleted transaction to the collection
+    console.log("New transaction to delete " + newTransactionEliminadas);
+    await newTransactionEliminadas.save(); 
  
     // Delete the transaction from the Transactions collection
     const transaction = await Transactions.findByIdAndDelete(id);
    console.log("idinterno", searchTransaction?.idinterno ); 
    if (!searchTransaction?.idinterno) {
-    return res.status(404).json({ message: "idinterno not found" });
+    return res.json({ message: "idinterno not found" });
   }
     // search reservacionxclientes y eliminarla. tambien buscar la reservacion y eliminarla y no tiene otra reservacionxclientes
     const searchReservacionporcliente = await ReservationXCliente.findOne({ idinterno: searchTransaction?.idinterno });

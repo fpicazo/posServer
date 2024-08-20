@@ -31,6 +31,7 @@ const TransaccionSchema = new mongoose.Schema({
     nameUserCortesia: { type: String, required: false },
     paymentMode: { type: String, required: true },
     idinterno: { type: String, required: false },
+    razonEliminacion: { type: String },
     client: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'Client', 
