@@ -105,6 +105,8 @@ const getItemIdByConcept = (concept) => {
         'tarjeta': { item_id: '2301987000014082035', name: 'Tarjeta' },
         'andador': { item_id: '2301987000014082052', name: 'Andador' },
         'eventos': { item_id: '2301987000014082069', name: 'Eventos' },
+        'peluche': { item_id: '2301987000016487005', name: 'Peluche' },
+        'promociones': { item_id: '2301987000016487026', name: 'Promociones' },
         // Add other concepts as needed
     };
 

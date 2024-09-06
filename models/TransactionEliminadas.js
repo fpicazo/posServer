@@ -25,6 +25,13 @@ const TransactionEliminadasSchema = new mongoose.Schema({
     eventosmoney: { type: Number, required: false },
     eventosqty: { type: Number, required: false },
     eventostotal: { type: Number, required: false },
+    peluchemoney: { type: Number, required: false },
+    pelucheqty: { type: Number, required: false },
+    peluchetotal: { type: Number, required: false },
+    promocionmoney: { type: Number, required: false },
+    promocionqty: { type: Number, required: false },
+    promociontotal: { type: Number, required: false },
+
 
     cortesiaMotivo: { type: String, required: false },
     cortesiaRango: { type: String, required: false },

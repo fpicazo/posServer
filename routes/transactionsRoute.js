@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
   try {
 
     
-    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno } = req.body;
+    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount } = req.body;
     console.log("BODY new transaccion ", req.body);
     var concept = req.body?.concept;
     let { date } = req.body; // Declare date with let so it can be reassigned
@@ -41,8 +41,8 @@ router.post('/', async (req, res) => {
      let campobatallamoney = 0, campobatallaqty = 0, campobatallatotal = 0;
      let juegosmoney = 0, juegosqty = 0, juegostotal = 0;
      let cabinamoney = 0, cabinaqty = 0, cabinatotal = 0;
-     let tarjetamoney = 0, tarjetaqty = 0, tarjetatotal = 0, andadormoney = 0, andadorqty = 0, 
-     andadortotal = 0, eventosmoney = 0, eventosqty = 0, eventostotal = 0;
+     let tarjetamoney = 0, tarjetaqty = 0, tarjetatotal = 0, andadormoney = 0, andadorqty = 0, promocionmoney = 0, promocionqty = 0, promociontotal = 0,
+     andadortotal = 0, eventosmoney = 0, eventosqty = 0, eventostotal = 0 , peluchemoney = 0, pelucheqty = 0, peluchetotal = 0;
 
     concept.forEach(product => {
 
@@ -72,7 +72,7 @@ router.post('/', async (req, res) => {
           tarjetaqty += quantity;
           tarjetatotal += total;
           break;
-          case 'Andador Virtual':
+          case 'Andador Virtual 7min':
           andadormoney += price;
           andadorqty += quantity;
           andadortotal += total;
@@ -82,13 +82,22 @@ router.post('/', async (req, res) => {
           eventosqty += quantity;
           eventostotal += total;
           break;
+          case 'Peluche Tai':
+          peluchemoney += price;
+          pelucheqty += quantity;
+          peluchetotal += total;
+
+          break;
+          case 'Promocion':
+          promocionmoney += price;
+          promocionqty += quantity;
+          promociontotal += total;
+          break;
         default:
           console.log(`Product ${name} does not match any category.`);
       }
       console.log("cabinatotal + ", cabinatotal);
     });
-
-
 
     const newTransaction = new Transactions({
       date,
@@ -117,10 +126,18 @@ router.post('/', async (req, res) => {
       eventosmoney,
       eventosqty,
       eventostotal,
+      peluchemoney,
+      pelucheqty,
+      peluchetotal,
+      promocionmoney,
+      promocionqty,
+      promociontotal,
       cortesiaMotivo,
       cortesiaRango,
       nameUserCortesia,
       idinterno,
+      cupon,
+      discount
 
 
 

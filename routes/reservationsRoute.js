@@ -548,7 +548,7 @@ router.put('/status/:id', async (req, res) => {
   console.log(req.body );
   const { id } = req.params;
   console.log(id);
-  const { status } = req.body;
+  const { status,cupon,discount } = req.body;
   try {
     var updatedReservation = await Reservation.findByIdAndUpdate(
       id,
@@ -575,6 +575,7 @@ router.put('/status/:id', async (req, res) => {
     updatedReservation.amount = details[0].amountIndiv;
     updatedReservation.email = client.email;
     updatedReservation.idreservacioncliente = details[0]._id;
+    updatedReservation.cupon = details[0].status;
 
     if (!updatedReservation) {
       return res.status(404).json({ message: "Reservation not found222" });
@@ -586,7 +587,7 @@ router.put('/status/:id', async (req, res) => {
     else {
       await ReservationXCliente.findByIdAndUpdate(
         details[0]._id,
-        { status: "booked"
+        { status: "booked",cupon,discount
         },
         { new: true }
       );

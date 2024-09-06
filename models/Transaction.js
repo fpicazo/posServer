@@ -22,15 +22,26 @@ const TransaccionSchema = new mongoose.Schema({
     andadormoney: { type: Number, required: false },
     andadorqty: { type: Number, required: false },
     andadortotal: { type: Number, required: false },
+
     eventosmoney: { type: Number, required: false },
     eventosqty: { type: Number, required: false },
     eventostotal: { type: Number, required: false },
+
+    peluchemoney: { type: Number, required: false },
+    pelucheqty: { type: Number, required: false },
+    peluchetotal: { type: Number, required: false },
+
+    promocionmoney: { type: Number, required: false },
+    promocionqty: { type: Number, required: false },
+    promociontotal: { type: Number, required: false },
 
     cortesiaMotivo: { type: String, required: false },
     cortesiaRango: { type: String, required: false },
     nameUserCortesia: { type: String, required: false },
     paymentMode: { type: String, required: true },
     idinterno: { type: String, required: false },
+    discount: { type: Number, required: false },
+    cupon: { type: String, required: false },
     razonEliminacion: { type: String },
     client: { 
       type: mongoose.Schema.Types.ObjectId, 

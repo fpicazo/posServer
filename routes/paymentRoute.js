@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECR_LIVE);
 
 
 router.post('/', async (req, res) => {
@@ -11,8 +11,9 @@ router.post('/', async (req, res) => {
     const articulos = req.body.articulos;
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
+      allow_promotion_codes:true,
       line_items: [{
-        price_data: {
+        price_data: { 
           currency: 'mxn',
           product_data: { 
             name: articulos, 
@@ -32,5 +33,27 @@ router.post('/', async (req, res) => {
     res.json({ id: session.id }); 
   });
 
+
+router.get('/stripe_session', async (req, res) => {
+    const idsession = req.query.session_id;
+    const session = await stripe.checkout.sessions.retrieve(idsession, {
+      expand: ['total_details.breakdown']
+    });
+    const amount_total = session.amount_subtotal;
+    const amount_final = session.amount_total;
+    const descuento = parseFloat(((1 - (amount_final / amount_total))*100 ).toFixed(2));
+    const couponName = session.total_details?.breakdown?.discounts?.[0]?.discount?.coupon?.name;
+    const json = { amount_total, amount_final, descuento, couponName };
+    res.json(json);
+  }
+  );
+
+  router.get('/payment-intent', async (req, res) => {
+    const { idpayment } = req.query;
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(idpayment);
+    res.json(paymentIntent); 
+  }
+  );
 
 module.exports = router;
