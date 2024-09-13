@@ -51,6 +51,7 @@ const TransactionEliminadasSchema = new mongoose.Schema({
       required: false
     },
     razonEliminacion: { type: String },
+    tc:{ type: String, required: false},
     
   }, { timestamps: true });
 

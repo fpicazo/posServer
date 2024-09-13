@@ -107,6 +107,7 @@ const getItemIdByConcept = (concept) => {
         'eventos': { item_id: '2301987000014082069', name: 'Eventos' },
         'peluche': { item_id: '2301987000016487005', name: 'Peluche' },
         'promociones': { item_id: '2301987000016487026', name: 'Promociones' },
+        'escape': { item_id: '2301987000016487026', name: 'Escape Room' },
         // Add other concepts as needed
     };
 

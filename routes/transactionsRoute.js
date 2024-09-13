@@ -16,7 +16,7 @@ router.post('/', async (req, res) => {
   try {
 
     
-    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount,folio,location } = req.body;
+    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount,tc,location } = req.body;
     console.log("BODY new transaccion ", req.body);
     var concept = req.body?.concept;
     let { date } = req.body; // Declare date with let so it can be reassigned
@@ -35,30 +35,6 @@ router.post('/', async (req, res) => {
       location = "Tepic";
     }
 
-    if (!sessionid)
-    {
-    if (!folio ) {
-      Folio.findOne({ location }).sort({ createdAt: -1 }).then((folio) => {
-        if (folio) {
-          folio.folio = folio.folio + 1;
-          folio.save();
-        }
-        else {
-          const newFolio = new Folio({
-            folio: 1,
-          });
-          newFolio.save();
-        }
-      });
-    }
-    else {
-      const newFolio = new Folio({
-        folio,
-        location
-      });
-      newFolio.save();
-    }
-  }
 
 
     //console.log("Concept", concept);
@@ -178,7 +154,8 @@ router.post('/', async (req, res) => {
       nameUserCortesia,
       idinterno,
       cupon,
-      discount
+      discount,
+      tc,
 
 
 
