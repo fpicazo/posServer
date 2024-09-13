@@ -16,9 +16,10 @@ router.post('/', async (req, res) => {
   try {
 
     
-    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount,tc,location } = req.body;
+    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount,tc } = req.body;
     console.log("BODY new transaccion ", req.body);
     var concept = req.body?.concept;
+    var location = req.body?.location;
     let { date } = req.body; // Declare date with let so it can be reassigned
     
     // Check if date is not provided and assign the current date to it
