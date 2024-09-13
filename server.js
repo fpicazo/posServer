@@ -13,6 +13,8 @@ const PaymentRoutes = require('./routes/paymentRoute');
 const productRoutes = require('./routes/productsRoute');
 const emailRoutes = require('./routes/emailsRoute');
 const settingsRoute = require('./routes/settingsRoute');
+const folioRoute = require('./routes/folioRoute');
+const promocionesRoute = require('./routes/promocionesRoute');
 const saveDataZoho = require('./utils/saveTransactionsZoho');
 
 
@@ -40,6 +42,9 @@ app.use('/products', productRoutes);
 app.use('/emails', emailRoutes);
 app.post('/saveDataZoho', saveDataZoho);
 app.use('/settings', settingsRoute);
+app.use('/folio', folioRoute);
+app.use('/promociones', promocionesRoute);
+
 
 
 

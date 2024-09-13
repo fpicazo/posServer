@@ -34,6 +34,9 @@ const TransaccionSchema = new mongoose.Schema({
     promocionmoney: { type: Number, required: false },
     promocionqty: { type: Number, required: false },
     promociontotal: { type: Number, required: false },
+    escapemoney: { type: Number, required: false },
+    escapeqty: { type: Number, required: false },
+    escapetotal: { type: Number, required: false },
 
     cortesiaMotivo: { type: String, required: false },
     cortesiaRango: { type: String, required: false },

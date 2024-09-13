@@ -5,6 +5,7 @@ const TransactionEliminadas = require('../models/TransactionEliminadas');
 const Reservation = require('../models/Reservation');
 const ReservationXCliente = require('../models/ReservationXCliente');
 const Client = require('../models/Client');
+const Folio = require('../models/folioModel');
 const moment = require('moment-timezone');
 const Timezone = "America/Hermosillo";
 
@@ -15,7 +16,7 @@ router.post('/', async (req, res) => {
   try {
 
     
-    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount } = req.body;
+    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount,folio,location } = req.body;
     console.log("BODY new transaccion ", req.body);
     var concept = req.body?.concept;
     let { date } = req.body; // Declare date with let so it can be reassigned
@@ -28,6 +29,37 @@ router.post('/', async (req, res) => {
     if (!concept ) {
       concept = [{ name: 'Campo de Batalla', price: req.body?.campobatallamoney, quantity: req.body?.campobatallaqty }];
     }
+
+    if (!location)
+    {
+      location = "Tepic";
+    }
+
+    if (!sessionid)
+    {
+    if (!folio ) {
+      Folio.findOne({ location }).sort({ createdAt: -1 }).then((folio) => {
+        if (folio) {
+          folio.folio = folio.folio + 1;
+          folio.save();
+        }
+        else {
+          const newFolio = new Folio({
+            folio: 1,
+          });
+          newFolio.save();
+        }
+      });
+    }
+    else {
+      const newFolio = new Folio({
+        folio,
+        location
+      });
+      newFolio.save();
+    }
+  }
+
 
     //console.log("Concept", concept);
     const productPhrases = concept?.map(product => {
@@ -42,7 +74,8 @@ router.post('/', async (req, res) => {
      let juegosmoney = 0, juegosqty = 0, juegostotal = 0;
      let cabinamoney = 0, cabinaqty = 0, cabinatotal = 0;
      let tarjetamoney = 0, tarjetaqty = 0, tarjetatotal = 0, andadormoney = 0, andadorqty = 0, promocionmoney = 0, promocionqty = 0, promociontotal = 0,
-     andadortotal = 0, eventosmoney = 0, eventosqty = 0, eventostotal = 0 , peluchemoney = 0, pelucheqty = 0, peluchetotal = 0;
+     andadortotal = 0, eventosmoney = 0, eventosqty = 0, eventostotal = 0 , peluchemoney = 0, pelucheqty = 0, peluchetotal = 0,
+     escapemoney = 0, escapeqty = 0, escapetotal = 0;
 
     concept.forEach(product => {
 
@@ -93,6 +126,11 @@ router.post('/', async (req, res) => {
           promocionqty += quantity;
           promociontotal += total;
           break;
+          case 'Escape Room':
+          escapemoney += price;
+          escapeqty += quantity;
+          escapetotal += total;
+          break;
         default:
           console.log(`Product ${name} does not match any category.`);
       }
@@ -132,6 +170,9 @@ router.post('/', async (req, res) => {
       promocionmoney,
       promocionqty,
       promociontotal,
+      escapemoney,
+      escapeqty,
+      escapetotal,
       cortesiaMotivo,
       cortesiaRango,
       nameUserCortesia,
