@@ -193,7 +193,7 @@ router.post('/', async (req, res) => {
 
 
         });
-/*
+
         await newTransaction.save();
 
         if (idinterno) {
@@ -204,7 +204,6 @@ router.post('/', async (req, res) => {
           }
         }
 
-*/
    console.log("New transaction", newTransaction);
     res.status(201).json(newTransaction);
     
