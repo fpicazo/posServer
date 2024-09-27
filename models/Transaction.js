@@ -56,6 +56,7 @@ const TransaccionSchema = new mongoose.Schema({
       ref: 'Session', 
       required: false
     },
+    promotionDetails : { type: Array, required: false},
     tc:{ type: String, required: false},
   }, { timestamps: true });
   

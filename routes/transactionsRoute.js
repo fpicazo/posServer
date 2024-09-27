@@ -16,9 +16,37 @@ router.post('/', async (req, res) => {
   try {
 
     
-    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount,tc } = req.body;
+    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount,tc,promocion,promociones } = req.body;
     console.log("BODY new transaccion ", req.body);
     var concept = req.body?.concept;
+    console.log("concept", concept);
+    let promotionDetails = [];
+
+    if (promociones && Array.isArray(promociones)) {
+      promociones.forEach(promo => {
+        // Check if the promotion already exists in promotionDetails
+        const existingPromotion = promotionDetails.find(p => p.promotionId === promo.id);
+    
+        if (existingPromotion) {
+          // If it exists, update the quantity by adding 1 (or any dynamic value)
+          existingPromotion.promotionQuantity += 1; // Increment by 1 each time a duplicate is found
+        } else {
+          // If not, add it as a new promotion entry with initial quantity of 1
+          promotionDetails.push({
+            promotionName: promo.nombre,
+            promotionPrice: promo.monto,
+            promotionId: promo.id,
+            promotionQuantity: 1 // Default quantity to 1
+          });
+        }
+      });
+    }
+
+    console.log("promotionDetails", promotionDetails);
+
+
+
+
     var location = req.body?.location;
     let { date } = req.body; // Declare date with let so it can be reassigned
     
@@ -102,6 +130,8 @@ router.post('/', async (req, res) => {
           promocionmoney += price;
           promocionqty += quantity;
           promociontotal += total;
+          // Tie promotions to the Promocion product
+          
           break;
           case 'Escape Room':
           escapemoney += price;
@@ -114,6 +144,7 @@ router.post('/', async (req, res) => {
       console.log("cabinatotal + ", cabinatotal);
     });
 
+    console.log("promotionDetails antes ", promotionDetails);
     const newTransaction = new Transactions({
       date,
       amount,
@@ -157,11 +188,12 @@ router.post('/', async (req, res) => {
       cupon,
       discount,
       tc,
+      promotionDetails: promotionDetails
 
 
 
         });
-
+/*
         await newTransaction.save();
 
         if (idinterno) {
@@ -172,9 +204,11 @@ router.post('/', async (req, res) => {
           }
         }
 
-
-    
+*/
+   console.log("New transaction", newTransaction);
     res.status(201).json(newTransaction);
+    
+
     
   } catch (error) {
     console.error(error);
