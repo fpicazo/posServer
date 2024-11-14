@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 const User = require('../models/Users');
+const Profiles = require('../models/profilesModel');
 require('dotenv').config();
 
 router.post('/login', async (req, res) => {
@@ -28,7 +29,23 @@ router.post('/login', async (req, res) => {
 
         const token = jwt.sign({ email }, process.env.SECRET_KEY, { expiresIn: '48h' });
         console.log("Token created " + token);
-        return res.status(200).json({ token,role: user.role,id: user._id,firstName: user.firstName,lastName: user.lastName});
+        let perfil = [];
+        if( user.perfil !== '' ){
+          perfil = await Profiles.findOne({ _id: user.perfil });
+        }
+        
+        console.log( '---------------------------------------------------------------------' )
+        console.log( perfil )
+        return res.status(200).json(
+                                      { token,
+                                        role: user.role,
+                                        id: user._id,
+                                        firstName: user.firstName,
+                                        lastName: user.lastName,
+                                        sucursal: user.perfil !== '' ? perfil.sucursal : '',
+                                        perfil: user.perfil
+                                      }
+                                    );
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Internal server error" });
@@ -36,10 +53,10 @@ router.post('/login', async (req, res) => {
 }
 );
 
-router.post('/register', async (req, res) => {
+  router.post('/register', async (req, res) => {
   console.log(req.body);
     try {
-      const { email, password, role,offices,firstName,lastName,phone } = req.body;
+      const { email, password, role,offices,firstName,lastName,phone, products, sucursal, perfil } = req.body;
       if (!email || !password) {
         return res.status(400).json({ message: "nombre, apellido y contraseña son obligatorio" });
       }
@@ -54,7 +71,7 @@ router.post('/register', async (req, res) => {
         const role = "Admin";
       }
       // Create and save the user
-      const user = new User({ email, password, role,offices,firstName,lastName,phone});
+      const user = new User({ email, password, role,offices,firstName,lastName,phone, products, sucursal, perfil});
       
       const userCreation = await user.save();
       console.log("User created " + userCreation);
@@ -68,6 +85,7 @@ router.post('/register', async (req, res) => {
     }
   });
 
+
   router.get('/users', async (req, res) => {
     try {
       const users = await User.find();
@@ -77,6 +95,7 @@ router.post('/register', async (req, res) => {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
+
 
   router.delete('/users/:id', async (req, res) => {
     try {
@@ -91,5 +110,51 @@ router.post('/register', async (req, res) => {
   }
   );
 
+
+  router.get('/user/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await User.find({ _id: id });
+      res.json( { data: user[0].role } );
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+  );
+
+
+  router.get('/users/filter/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const usersFind = await User.findById(id);
+      let users = [];
+      if( usersFind.role === 'admin' ){
+        
+        users = await User.find();
+        return res.json(users);
+
+      }else if( usersFind.role === 'gerente' ){
+
+        const profiles = await Profiles.find({ _id: usersFind.perfil });
+        let arraySucursales = [];
+        profiles[0].sucursales.map( ( row ) => {
+            arraySucursales = [ ...arraySucursales, row._id ];
+        } );
+        const perfilesFilter = await Profiles.find({ tipoUsuario: 'user', sucursal: { $in: arraySucursales } });
+        let arrayPerfiles = [];
+        perfilesFilter.map( ( row ) => {
+          arrayPerfiles = [ ...arrayPerfiles, row._id ];
+        } );
+        const usersArray = await User.find({ perfil: { $in: arrayPerfiles } });
+        return res.json(usersArray);
+
+      }
+      
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   module.exports = router;

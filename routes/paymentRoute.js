@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
-const stripe = require('stripe')(process.env.STRIPE_SECR_LIVE);
+const Reservation = require('../models/Reservation');
+// const stripe = require('stripe')(process.env.STRIPE_SECR_LIVE);
+const stripe = require('stripe')(process.env.STRIPE_SECR_PRUEBA)
 
 
-router.post('/', async (req, res) => {
-    console.log(req.body);
+
+  router.post('/', async (req, res) => {
     const session_id = req.body.sessionid;
     const amount = req.body.amount;
     const articulos = req.body.articulos;
@@ -29,14 +31,16 @@ router.post('/', async (req, res) => {
       success_url:  process.env.BASE_URL + "/#/success?session_id=" + session_id,
       cancel_url: process.env.BASE_URL + '/#/cancel?session_id=' + session_id,
     });
-    console.log(session);
-    res.json({ id: session.id }); 
+    await Reservation.findOneAndUpdate( { _id: session_id }, { idSessionStripe: session.id });
+    res.json({ id: session.id, url: session.url }); 
   });
 
 
-router.get('/stripe_session', async (req, res) => {
+  router.get('/stripe_session', async (req, res) => {
     const idsession = req.query.session_id;
-    const session = await stripe.checkout.sessions.retrieve(idsession, {
+    const bucqueda = await Reservation.findById(idsession);
+
+    const session = await stripe.checkout.sessions.retrieve(bucqueda.idSessionStripe, {
       expand: ['total_details.breakdown']
     });
     const amount_total = session.amount_subtotal;
@@ -47,6 +51,7 @@ router.get('/stripe_session', async (req, res) => {
     res.json(json);
   }
   );
+
 
   router.get('/payment-intent', async (req, res) => {
     const { idpayment } = req.query;

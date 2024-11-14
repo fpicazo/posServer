@@ -6,15 +6,21 @@ const TransaccionSchema = new mongoose.Schema({
     date: { type: Date, required: true },
     amount: { type: Number, required: true },
     concept: { type: Array, required: true },
+
+    concepts: { type: Array, required: true },
+    
     campobatallamoney: { type: Number, required: false },
     campobatallaqty: { type: Number, required: false },
     campobatallatotal: { type: Number, required: false },
+    
     juegosmoney: { type: Number, required: false },
     juegosqty: { type: Number, required: false },
     juegostotal: { type: Number, required: false },
+    
     cabinamoney: { type: Number, required: false },
     cabinaqty: { type: Number, required: false },
     cabinatotal: { type: Number, required: false },
+
     tarjetaqty: { type: Number, required: false },
     tarjetamoney: { type: Number, required: false },
     tarjetatotal: { type: Number, required: false },
@@ -34,9 +40,6 @@ const TransaccionSchema = new mongoose.Schema({
     promocionmoney: { type: Number, required: false },
     promocionqty: { type: Number, required: false },
     promociontotal: { type: Number, required: false },
-    escapemoney: { type: Number, required: false },
-    escapeqty: { type: Number, required: false },
-    escapetotal: { type: Number, required: false },
 
     cortesiaMotivo: { type: String, required: false },
     cortesiaRango: { type: String, required: false },
@@ -56,10 +59,10 @@ const TransaccionSchema = new mongoose.Schema({
       ref: 'Session', 
       required: false
     },
-    promotionDetails : { type: Array, required: false},
     tc:{ type: String, required: false},
+    sucursal:{ type: String, required: false}
+    
   }, { timestamps: true });
-  
 
 const Transactions = mongoose.model('Transactions', TransaccionSchema);
 

@@ -15,9 +15,11 @@ const emailRoutes = require('./routes/emailsRoute');
 const settingsRoute = require('./routes/settingsRoute');
 const folioRoute = require('./routes/folioRoute');
 const promocionesRoute = require('./routes/promocionesRoute');
+const branchesRoutes = require('./routes/branchesRoutes');
+const profilesRoutes = require('./routes/profilesRoutes');
+const typesRoutes = require('./routes/typesRoutes');
+
 const saveDataZoho = require('./utils/saveTransactionsZoho');
-
-
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -42,9 +44,12 @@ app.use('/products', productRoutes);
 app.use('/emails', emailRoutes);
 app.post('/saveDataZoho', saveDataZoho);
 app.use('/settings', settingsRoute);
+
 app.use('/folio', folioRoute);
 app.use('/promociones', promocionesRoute);
-
+app.use('/branches', branchesRoutes);
+app.use('/profiles', profilesRoutes);
+app.use('/types', typesRoutes);
 
 
 

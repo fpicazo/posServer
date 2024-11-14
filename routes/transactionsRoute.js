@@ -5,7 +5,7 @@ const TransactionEliminadas = require('../models/TransactionEliminadas');
 const Reservation = require('../models/Reservation');
 const ReservationXCliente = require('../models/ReservationXCliente');
 const Client = require('../models/Client');
-const Folio = require('../models/folioModel');
+const Types = require('../models/typesModel');
 const moment = require('moment-timezone');
 const Timezone = "America/Hermosillo";
 
@@ -16,39 +16,12 @@ router.post('/', async (req, res) => {
   try {
 
     
-    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount,tc,promocion,promociones } = req.body;
+    const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount, tc, sucursal } = req.body;
     console.log("BODY new transaccion ", req.body);
     var concept = req.body?.concept;
-    console.log("concept", concept);
-    let promotionDetails = [];
-
-    if (promociones && Array.isArray(promociones)) {
-      promociones.forEach(promo => {
-        // Check if the promotion already exists in promotionDetails
-        const existingPromotion = promotionDetails.find(p => p.promotionId === promo.id);
-    
-        if (existingPromotion) {
-          // If it exists, update the quantity by adding 1 (or any dynamic value)
-          existingPromotion.promotionQuantity += 1; // Increment by 1 each time a duplicate is found
-        } else {
-          // If not, add it as a new promotion entry with initial quantity of 1
-          promotionDetails.push({
-            promotionName: promo.nombre,
-            promotionPrice: promo.monto,
-            promotionId: promo.id,
-            promotionQuantity: 1 // Default quantity to 1
-          });
-        }
-      });
-    }
-
-    console.log("promotionDetails", promotionDetails);
-
-
-
-
-    var location = req.body?.location;
     let { date } = req.body; // Declare date with let so it can be reassigned
+
+    console.log( ' ------------------------------------------------------ ', concept );
     
     // Check if date is not provided and assign the current date to it
     if (!date) {
@@ -59,17 +32,10 @@ router.post('/', async (req, res) => {
       concept = [{ name: 'Campo de Batalla', price: req.body?.campobatallamoney, quantity: req.body?.campobatallaqty }];
     }
 
-    if (!location)
-    {
-      location = "Tepic";
-    }
-
-
-
     //console.log("Concept", concept);
     const productPhrases = concept?.map(product => {
       const amount = product.price * product.quantity;
-      return `${product.name} - ${product.quantity} - $${amount}`;
+      return `${product.nameProduct} - ${product.quantity} - $${amount}`;
     }).join(' || ');
     console.log("productPhrases2", productPhrases);
 
@@ -79,16 +45,15 @@ router.post('/', async (req, res) => {
      let juegosmoney = 0, juegosqty = 0, juegostotal = 0;
      let cabinamoney = 0, cabinaqty = 0, cabinatotal = 0;
      let tarjetamoney = 0, tarjetaqty = 0, tarjetatotal = 0, andadormoney = 0, andadorqty = 0, promocionmoney = 0, promocionqty = 0, promociontotal = 0,
-     andadortotal = 0, eventosmoney = 0, eventosqty = 0, eventostotal = 0 , peluchemoney = 0, pelucheqty = 0, peluchetotal = 0,
-     escapemoney = 0, escapeqty = 0, escapetotal = 0;
+     andadortotal = 0, eventosmoney = 0, eventosqty = 0, eventostotal = 0 , peluchemoney = 0, pelucheqty = 0, peluchetotal = 0;
 
     concept.forEach(product => {
 
       console.log("product + ", product);
-      const { name, price, quantity } = product;
+      const { nameProduct, price, quantity, type } = product;
       const total = price * quantity;
 
-      switch (name) {
+      switch (type) {
         case 'Campo de Batalla':
           campobatallamoney += price;
           campobatallaqty += quantity;
@@ -99,8 +64,7 @@ router.post('/', async (req, res) => {
           juegosqty += quantity;
           juegostotal += total;
           break;
-        case 'Cabinas Inmersivas' :
-        case 'Cabinas Inmersivas 15m':
+        case 'Cabinas Inmersivas':
           cabinamoney += price;
           cabinaqty += quantity;
           cabinatotal += total;
@@ -110,7 +74,7 @@ router.post('/', async (req, res) => {
           tarjetaqty += quantity;
           tarjetatotal += total;
           break;
-          case 'Andador Virtual 7min':
+          case 'Andador Virtual':
           andadormoney += price;
           andadorqty += quantity;
           andadortotal += total;
@@ -120,7 +84,7 @@ router.post('/', async (req, res) => {
           eventosqty += quantity;
           eventostotal += total;
           break;
-          case 'Peluche Tai':
+          case 'Peluche':
           peluchemoney += price;
           pelucheqty += quantity;
           peluchetotal += total;
@@ -130,25 +94,40 @@ router.post('/', async (req, res) => {
           promocionmoney += price;
           promocionqty += quantity;
           promociontotal += total;
-          // Tie promotions to the Promocion product
-          
-          break;
-          case 'Escape Room':
-          escapemoney += price;
-          escapeqty += quantity;
-          escapetotal += total;
           break;
         default:
-          console.log(`Product ${name} does not match any category.`);
+          console.log(`Product ${type} does not match any category.`);
       }
       console.log("cabinatotal + ", cabinatotal);
     });
 
-    console.log("promotionDetails antes ", promotionDetails);
+    // campobatallamoney += price;
+    // campobatallaqty += quantity;
+    // campobatallatotal += total;
+
+    let concepts = [];
+    concept.forEach(product => {
+
+      console.log("product + ", product);
+      const { _id, nameProduct, price, quantity, type } = product;
+      const total = price * quantity;
+
+      concepts = [ ...concepts, {
+        id: _id,
+        type,
+        money: price,
+        qty: quantity,
+        total: total
+      }]
+      
+    });
+
+
     const newTransaction = new Transactions({
       date,
       amount,
       concept:productPhrases,
+      concepts: concepts,
       paymentMode,
       session: sessionid,
         if (client) {
@@ -178,17 +157,14 @@ router.post('/', async (req, res) => {
       promocionmoney,
       promocionqty,
       promociontotal,
-      escapemoney,
-      escapeqty,
-      escapetotal,
       cortesiaMotivo,
       cortesiaRango,
       nameUserCortesia,
       idinterno,
       cupon,
       discount,
-      tc,
-      promotionDetails: promotionDetails
+      tc: tc,
+      sucursal: sucursal
 
 
 
@@ -204,17 +180,17 @@ router.post('/', async (req, res) => {
           }
         }
 
-   console.log("New transaction", newTransaction);
-    res.status(201).json(newTransaction);
-    
 
+    
+    res.status(201).json(newTransaction);
     
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error adding Transaction" });
   }
 });
-         
+
+
 router.get('/weekly-summary', async (req, res) => {
   const today = new Date();
   const sevenDaysAgo = new Date(today.setDate(today.getDate() - 7));
@@ -256,9 +232,9 @@ router.get('/weekly-summary', async (req, res) => {
 });
 
 
-
 router.get('/', async (req, res) => {
   const { startDate, endDate } = req.query;
+  console.log( startDate );
   console.log("QUERY ", req.query);
   const query = {};
   console.log("startDate ", moment.tz(startDate, Timezone).toDate());
@@ -272,7 +248,6 @@ router.get('/', async (req, res) => {
       query.date = {};
     }
     query.date.$lte = moment.tz(endDate, 'America/Mexico_City').endOf('day').toDate();
-
   }
 
   try {
@@ -311,6 +286,7 @@ router.get('/eliminadas', async (req, res) => {
     res.status(500).json({ message: "Error fetching transactions" });
   }
 });
+
 
 // PUT route to update a note
 router.put('/:id', async (req, res) => {
@@ -405,6 +381,132 @@ router.delete('/:id', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error deleting transaction" });
+  }
+});
+
+
+
+// -------------------------------
+
+router.post('/transparam', async(req, res) => {
+
+  try 
+  {
+    const { startDate, endDate, arrayScucursales } = req.body;
+
+    console.log( startDate, endDate, arrayScucursales );
+
+    const startDateF = new Date(`${startDate}T00:00:00Z`);  // Asegúrate de que es UTC si lo necesitas
+    const endDateF = new Date(`${endDate}T23:59:59Z`);   
+
+    let transactions = await Transactions.find({
+      createdAt: {
+        $gte: startDateF,
+        $lte: endDateF
+      },
+      $or: [
+        { sucursal: { $in: arrayScucursales } },
+        { sucursal: { $exists: false } }  // Documentos sin el campo 'sucursal'
+      ]
+    }).sort({ createdAt: -1 });
+
+    const types = await Types.find({});
+    let encabezadosTipos = [];
+    types.sort((a, b) => a.order - b.order).map( ( r ) => {
+      encabezadosTipos = [ ...encabezadosTipos, {
+        tipo: r.type,
+        cantidad: `${r.type} Cantidad`,
+        precio: `${r.type} Precio`,
+        total: `${r.type} Total`
+      } ];
+    } );
+
+    let fetchedTransaccionesNew = [];
+    transactions.map( ( row ) => {
+        let fila = {};
+
+        fila._id = row._id;
+        fila.location = row.location;
+        fila.date = row.date;
+        fila.amount = row.amount;
+
+        if( row.concepts.length > 0 ){
+          encabezadosTipos.map( ( a ) => {
+            let cuenta = row.concepts.find( x => x.type === a.tipo );
+            if( cuenta ){
+              fila[a.cantidad] = cuenta.qty;
+              fila[a.precio] = cuenta.money;
+              fila[a.total] = cuenta.total;
+            }else{
+              fila[a.cantidad] = 0;
+              fila[a.precio] = 0;
+              fila[a.total] = 0;
+            }
+          } )
+        }else{
+
+          fila['Campo de Batalla Cantidad'] = row.campobatallaqty;
+          fila['Campo de Batalla Precio'] = row.campobatallamoney;
+          fila['Campo de Batalla Total'] = row.campobatallatotal;
+
+          fila['Maquinas Cantidad'] = row.juegosqty;
+          fila['Maquinas Precio'] = row.juegosmoney;
+          fila['Maquinas Total'] = row.juegostotal;
+
+          fila['Cabinas Inmersivas Cantidad'] = row.cabinaqty;
+          fila['Cabinas Inmersivas Precio'] = row.cabinamoney;
+          fila['Cabinas Inmersivas Total'] = row.cabinatotal;
+
+          fila['Tarjeta Cantidad'] = row.tarjetaqty;
+          fila['Tarjeta Precio'] = row.tarjetamoney;
+          fila['Tarjeta Total'] = row.tarjetatotal;
+
+          fila['Andador Virtual Cantidad'] = row.andadorqty;
+          fila['Andador Virtual Precio'] = row.andadormoney;
+          fila['Andador Virtual Total'] = row.andadortotal;
+
+          fila['Eventos Cantidad'] = row.eventosqty;
+          fila['Eventos Precio'] = row.eventosmoney;
+          fila['Eventos Total'] = row.eventostotal;
+
+          fila['Peluche Cantidad'] = row.pelucheqty;
+          fila['Peluche Precio'] = row.peluchemoney;
+          fila['Peluche Total'] = row.peluchetotal;
+
+          fila['Promociones Cantidad'] = row.promocionqty;
+          fila['Promociones Precio'] = row.promocionmoney;
+          fila['Promociones Total'] = row.promociontotal;
+
+          fila['Escape Cantidad'] = row.escapeqty;
+          fila['Escape Precio'] = row.escapemoney;
+          fila['Escape Total'] = row.escapetotal;
+
+          fila['Alimentos Cantidad'] = 0;
+          fila['Alimentos Precio'] = 0;
+          fila['Alimentos Total'] = 0;
+
+          fila['Bebidas Cantidad'] = 0;
+          fila['Bebidas Precio'] = 0;
+          fila['Bebidas Total'] = 0;
+
+
+
+        }
+
+        fila.idinterno = row.idinterno;
+        fila.session = row.session;
+        fila.tc = row.tc;
+        fila.sucursal = row.sucursal;
+        fila.paymentMode = row.paymentMode;
+        fila.client = row.client;
+        fetchedTransaccionesNew = [ ...fetchedTransaccionesNew, fila ];
+
+      } );
+    
+    res.json(fetchedTransaccionesNew);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching transactions" });
   }
 });
 

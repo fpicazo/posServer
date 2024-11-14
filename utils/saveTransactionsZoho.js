@@ -86,9 +86,9 @@ const saveDataZoho = async (req, res) => {
         // Send invoice data to Zoho
         const response = await axios.post('https://books.zoho.com/api/v3/invoices?organization_id=719250654', invoiceData, { headers });
 
-        //Respond with Zoho's API response
+        // Respond with Zoho's API response
         const id_invoice = response.data.invoice.invoice_id;
-        maksent = await axios.post('https://books.zoho.com/api/v3/invoices/'+id_invoice+'/status/sent?organization_id=719250654', null,{ headers });
+        const maksent = await axios.post('https://books.zoho.com/api/v3/invoices/'+id_invoice+'/status/sent?organization_id=719250654', null,{ headers });
         res.json(maksent);
     } catch (error) {
         console.error(error.response ? error.response.data : error);
@@ -106,12 +106,11 @@ const getItemIdByConcept = (concept) => {
         'andador': { item_id: '2301987000014082052', name: 'Andador' },
         'eventos': { item_id: '2301987000014082069', name: 'Eventos' },
         'peluche': { item_id: '2301987000016487005', name: 'Peluche' },
-        'promocion': { item_id: '2301987000016487026', name: 'Promociones' },
-        'escape': { item_id: '2301987000016919535', name: 'Escape Room' },
+        'promociones': { item_id: '2301987000016487026', name: 'Promociones' },
         // Add other concepts as needed
     };
 
-    return conceptItemMap[concept] || { item_id: '2301987000016923001', name: 'Deconocido VirtualityWorld' };
+    return conceptItemMap[concept] || { item_id: 'default_item_id', name: 'Default Item' };
 };
 
 module.exports = saveDataZoho;

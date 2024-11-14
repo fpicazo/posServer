@@ -45,8 +45,11 @@ const createPaymentLink = async (res, data) => {
 
 // POST route to add a new note
 router.post('/', async (req, res) => {
+
   console.log("New reservacion" + req.body);
+  
   try {
+
     const { phone, firstName, lastName, email, date,time, players, amountIndiv,idinterno } = req.body;
     console.log("date " + date);
     let game = req.body.game;
@@ -59,15 +62,18 @@ router.post('/', async (req, res) => {
       location = "Tepic";
     }
 
+
     if (!time) {
+
       startDate = moment.tz(date, Timezone).toDate();
+
     } else {
 
-    const dateTimeString = `${date} ${time}`;
-    console.log("dateTimeString " + dateTimeString);
-    startDate = moment.tz(dateTimeString, Timezone).toDate();
-    }
+      const dateTimeString = `${date} ${time}`;
+      console.log("dateTimeString " + dateTimeString);
+      startDate = moment.tz(dateTimeString, Timezone).toDate();
 
+    }
 
     console.log("startDate " + startDate);
     const endDate = moment.tz(startDate, Timezone).add(30, 'minutes').toDate(); // Add 30 minutes to startDate
@@ -85,7 +91,6 @@ router.post('/', async (req, res) => {
     }
 
     console.log("search existing client " + existingClient);
-
     if (!existingClient && !clientId) {
       const newClient = new Client({
         phone,
@@ -107,7 +112,6 @@ router.post('/', async (req, res) => {
       modo = "pos";
       status = "booked";
     }
-
     console.log("game " + game);
 
     const maxClients = catalogoJuegos.find(juego => juego.name === game).maxPlayers;
@@ -156,6 +160,7 @@ router.post('/', async (req, res) => {
 
       res.status(201).json(newReservation);
     } else {
+
       // Update existing reservation if it exists
       const newPlayersNumber = existingReservation.participantsbooked + players;
       existingReservation = await Reservation.findByIdAndUpdate(
@@ -188,6 +193,7 @@ router.post('/', async (req, res) => {
 
       res.status(200).json(existingReservation);
     }
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error adding Reservation" });

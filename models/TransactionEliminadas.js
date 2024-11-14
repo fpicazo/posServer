@@ -31,9 +31,6 @@ const TransactionEliminadasSchema = new mongoose.Schema({
     promocionmoney: { type: Number, required: false },
     promocionqty: { type: Number, required: false },
     promociontotal: { type: Number, required: false },
-    escapemoney: { type: Number, required: false },
-    escapeqty: { type: Number, required: false },
-    escapetotal: { type: Number, required: false },
 
 
     cortesiaMotivo: { type: String, required: false },
@@ -51,7 +48,6 @@ const TransactionEliminadasSchema = new mongoose.Schema({
       required: false
     },
     razonEliminacion: { type: String },
-    tc:{ type: String, required: false},
     
   }, { timestamps: true });
 
