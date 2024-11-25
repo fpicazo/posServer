@@ -54,7 +54,8 @@ app.use('/types', typesRoutes);
 
 
 // Protected routes
-// Protected routes
+// name, email
+
 
 app.listen(port, () => {
     console.log(`Server listening on http://localhost:${port}`);
