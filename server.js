@@ -53,8 +53,8 @@ app.use('/types', typesRoutes);
 
 
 
-// Protected routes
 // name, email
+// name2, email2
 
 
 app.listen(port, () => {
