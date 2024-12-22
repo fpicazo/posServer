@@ -7,7 +7,8 @@ const moment = require('moment-timezone');
 const Timezone = "America/Hermosillo";
 
 router.get('/', async (req, res) => {
-  var { startDate, endDate } = req.query;
+  var { startDate, endDate, branches } = req.query;
+  console.log("branches:", branches);
   
   if (!startDate) {
     startDate = new Date();
@@ -19,14 +20,22 @@ router.get('/', async (req, res) => {
   startDate = moment.tz(startDate, Timezone).startOf('day').toDate();
   endDate = moment.tz(endDate, Timezone).endOf('day').toDate();
 
-  console.log("startDate:", startDate);
+  console.log("startDate:", startDate); 
   console.log("endDate:", endDate);
-
+ 
   try {
-    const transactions = await Transaction.find({ date: { $gte: startDate, $lte: endDate } });
-    console.log("transactions:", transactions);
+    const branchFilter = branches && branches.length > 0 ? { sucursal: { $in: branches } } : {};
+    console.log("branchFilter:", branchFilter);
+    // Find transactions within the date range and filter by selected branches
+    const transactions = await Transaction.find({
+      date: { $gte: startDate, $lte: endDate },
+      ...branchFilter
+    });
 
-    const transactionsEliminadas = await TransactionEliminadas.find({ date: { $gte: startDate, $lte: endDate } });
+    //console.log("transactions:", transactions);
+
+    const transactionsEliminadas = await TransactionEliminadas.find({ date: { $gte: startDate, $lte: endDate },
+      ...branchFilter  });
 
     // Summing totals by concept
     const totals = {};

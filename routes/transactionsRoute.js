@@ -194,13 +194,16 @@ router.post('/', async (req, res) => {
 router.get('/weekly-summary', async (req, res) => {
   const today = new Date();
   const sevenDaysAgo = new Date(today.setDate(today.getDate() - 7));
+  var { branches } = req.query;
 
   try {
+    const branchFilter = branches && branches.length > 0 ? { sucursal: { $in: branches } } : {};
     const summary = await Transactions.aggregate([
       {
         $match: {
           date: { $gte: sevenDaysAgo, $lte: new Date() },
-          modo: "pos"
+          modo: "pos",
+          ...branchFilter
         }
       },
       {
@@ -234,6 +237,7 @@ router.get('/weekly-summary', async (req, res) => {
 
 router.get('/', async (req, res) => {
   const { startDate, endDate } = req.query;
+  var { branches } = req.query;
   console.log( startDate );
   console.log("QUERY ", req.query);
   const query = {};
@@ -250,6 +254,11 @@ router.get('/', async (req, res) => {
     query.date.$lte = moment.tz(endDate, 'America/Mexico_City').endOf('day').toDate();
   }
 
+  // Branch filter - Add to query if branches are provided
+  if (branches && branches.length > 0) {
+    query.sucursal = { $in: branches };  // Filter by branches (sucursal)
+  }
+
   try {
     const transactions = await Transactions.find(query).sort({ createdAt: -1 }); // replace `createdAt` with your date field
     res.json(transactions);
@@ -262,6 +271,7 @@ router.get('/', async (req, res) => {
 
 router.get('/eliminadas', async (req, res) => {
   const { startDate, endDate } = req.query;
+  var { branches } = req.query;
   console.log("QUERY ", req.query);
   const query = {};
   console.log("startDate ", moment.tz(startDate, Timezone).toDate());
@@ -276,6 +286,10 @@ router.get('/eliminadas', async (req, res) => {
     }
     query.date.$lte = moment.tz(endDate, 'America/Mexico_City').endOf('day').toDate();
 
+  }
+
+  if (branches && branches.length > 0) {
+    query.sucursal = { $in: branches };  // Filter by branches (sucursal)
   }
 
   try {
