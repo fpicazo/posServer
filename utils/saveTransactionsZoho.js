@@ -6,6 +6,7 @@ const Types = require('../models/typesModel');
 
 const saveDataZoho = async (req, res) => {
     let date = req.query.date;
+    let sucursal = req.query.sucursal;
     console.log("date", date);
     try {
 
@@ -19,7 +20,7 @@ const saveDataZoho = async (req, res) => {
 
         // Construct the query
         const query = {
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
+            createdAt: { $gte: startOfDay, $lte: endOfDay }, sucursal: sucursal
         };
         console.log( JSON.stringify(query) );
 
