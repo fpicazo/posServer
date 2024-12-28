@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Branches = require('../models/branchesModel');
+const TaxCompany = require('../models/taxCompanyModel');
 
 const Users = require('../models/Users');
 const Profiles = require('../models/profilesModel');
+
 
 // Get all branches
 router.get('/', async (req, res) => {
@@ -45,14 +47,31 @@ router.get('/:id', async (req, res) => {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
     }
-});  
+});
+
+
+router.get('/one/:id', async (req, res) => {
+    try {
+
+        const { id } = req.params;
+
+        const brancheUser = await Branches.find({ _id: id });
+        const taxCompany = await TaxCompany.findById(brancheUser[0].company);
+        console.log( { branche: brancheUser[0], taxCompany } );
+        res.status(200).json({ branche: brancheUser[0], taxCompany });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 
 
 router.post('/', async (req, res) => {
     try {
-        const { nombreSucursal, estado, direccion } = req.body;
+        const { nombreSucursal, empresa, estado, direccion, telefono, abierto } = req.body;
 
-        const branches = Branches({ nameBranches: nombreSucursal, state: estado, address: direccion });
+        const branches = Branches({ nameBranches: nombreSucursal, company: empresa, state: estado, address: direccion, phone: telefono, open: abierto });
         await branches.save();
 
         res.status(200).json({ menaje: 'ok' });
@@ -65,9 +84,9 @@ router.post('/', async (req, res) => {
 
 router.put('/', async (req, res) => {
     try {
-        const { _id, nombreSucursal, estado, direccion } = req.body;
+        const { _id, nombreSucursal, empresa, estado, direccion, telefono, abierto } = req.body;
 
-        await Branches.findByIdAndUpdate(_id, { nameBranches: nombreSucursal, state: estado, address: direccion });
+        await Branches.findByIdAndUpdate(_id, { nameBranches: nombreSucursal, company: empresa, state: estado, address: direccion, phone: telefono, open: abierto });
 
         res.status(200).json({ menaje: 'ok' });
     } catch (error) {
@@ -75,5 +94,6 @@ router.put('/', async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 });
+
 
 module.exports = router;

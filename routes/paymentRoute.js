@@ -31,7 +31,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECR_PRUEBA)
       success_url:  process.env.BASE_URL + "/#/success?session_id=" + session_id,
       cancel_url: process.env.BASE_URL + '/#/cancel?session_id=' + session_id,
     });
-    await Reservation.findOneAndUpdate( { _id: session_id }, { idSessionStripe: session.id });
+    // await Reservation.findOneAndUpdate( { _id: session_id }, { idSessionStripe: session.id });
     res.json({ id: session.id, url: session.url }); 
   });
 

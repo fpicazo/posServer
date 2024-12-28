@@ -16,8 +16,13 @@ const settingsRoute = require('./routes/settingsRoute');
 const folioRoute = require('./routes/folioRoute');
 const promocionesRoute = require('./routes/promocionesRoute');
 const branchesRoutes = require('./routes/branchesRoutes');
+const branchesGetRoutes = require('./routes/branchesRoutes');
 const profilesRoutes = require('./routes/profilesRoutes');
 const typesRoutes = require('./routes/typesRoutes');
+
+const rooms = require('./routes/roomsRoute');
+const roomsGetRoutes = require('./routes/roomsGetRoutes');
+const taxtCompanyRoutes = require('./routes/taxtCompanyRoutes');
 
 const saveDataZoho = require('./utils/saveTransactionsZoho');
 
@@ -32,9 +37,12 @@ connectDB();
 
 // Public routes
 app.use('/', authRoutes);
+app.use('/branchesget', branchesGetRoutes);
+app.use('/roomsget', roomsGetRoutes);
+
 
 // Apply verifyToken middleware globally to all routes coming after this point
-//app.use(verifyToken);
+// app.use(verifyToken);
 app.use('/transactions', transactionRoutes);
 app.use('/reservations', reservationRoutes);
 app.use('/clients', clientRoutes);
@@ -50,6 +58,10 @@ app.use('/promociones', promocionesRoute);
 app.use('/branches', branchesRoutes);
 app.use('/profiles', profilesRoutes);
 app.use('/types', typesRoutes);
+app.use('/rooms', rooms);
+app.use('/taxtCompany', taxtCompanyRoutes);
+
+
 
 
 

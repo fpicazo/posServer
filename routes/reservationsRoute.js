@@ -114,7 +114,7 @@ router.post('/', async (req, res) => {
     }
     console.log("game " + game);
 
-    const maxClients = catalogoJuegos.find(juego => juego.name === game).maxPlayers;
+    const maxClients = 50;
 
     console.log("StartDate " + startDate);
 

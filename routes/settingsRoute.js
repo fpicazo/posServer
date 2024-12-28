@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Transaction = require('../models/Transaction');
 const TransactionEliminadas = require('../models/TransactionEliminadas');
+const Types = require('../models/typesModel');
 const moment = require('moment-timezone');
 
 const Timezone = "America/Hermosillo";
@@ -24,6 +25,7 @@ router.get('/', async (req, res) => {
   console.log("endDate:", endDate);
  
   try {
+
     const branchFilter = branches && branches.length > 0 ? { sucursal: { $in: branches } } : {};
     console.log("branchFilter:", branchFilter);
     // Find transactions within the date range and filter by selected branches
@@ -31,6 +33,110 @@ router.get('/', async (req, res) => {
       date: { $gte: startDate, $lte: endDate },
       ...branchFilter
     });
+
+
+
+    const types = await Types.find({});
+    let encabezadosTipos = [];
+    types.sort((a, b) => a.order - b.order).map( ( r ) => {
+        encabezadosTipos = [ ...encabezadosTipos, {
+        tipo: r.type,
+        cantidad: `${r.type} Cantidad`,
+        precio: `${r.type} Precio`,
+        total: `${r.type} total`
+        } ];
+    } );
+
+    let fetchedTransaccionesNew = [];
+    transactions.map( ( row ) => {
+        let fila = {};
+
+        fila._id = row._id;
+        fila.location = row.location;
+        fila.date = row.date;
+        fila.amount = row.amount;
+
+        if( row.concepts.length > 0 ){
+        encabezadosTipos.map( ( a ) => {
+            let cuenta = row.concepts.find( x => x.type === a.tipo );
+            if( cuenta ){
+            fila[a.cantidad] = cuenta.qty;
+            fila[a.precio] = cuenta.money;
+            fila[a.total] = cuenta.total;
+            }else{
+            fila[a.cantidad] = 0;
+            fila[a.precio] = 0;
+            fila[a.total] = 0;
+            }
+        } )
+        }else{
+
+        fila['Campo de Batalla Cantidad'] = row.campobatallaqty;
+        fila['Campo de Batalla Precio'] = row.campobatallamoney;
+        fila['Campo de Batalla total'] = row.campobatallatotal;
+
+        fila['Maquinas Cantidad'] = row.juegosqty;
+        fila['Maquinas Precio'] = row.juegosmoney;
+        fila['Maquinas total'] = row.juegostotal;
+
+        fila['Cabinas Inmersivas Cantidad'] = row.cabinaqty;
+        fila['Cabinas Inmersivas Precio'] = row.cabinamoney;
+        fila['Cabinas Inmersivas total'] = row.cabinatotal;
+
+        fila['Tarjeta Cantidad'] = row.tarjetaqty;
+        fila['Tarjeta Precio'] = row.tarjetamoney;
+        fila['Tarjeta total'] = row.tarjetatotal;
+
+        fila['Andador Virtual Cantidad'] = row.andadorqty;
+        fila['Andador Virtual Precio'] = row.andadormoney;
+        fila['Andador Virtual total'] = row.andadortotal;
+
+        fila['Eventos Cantidad'] = row.eventosqty;
+        fila['Eventos Precio'] = row.eventosmoney;
+        fila['Eventos total'] = row.eventostotal;
+
+        fila['Peluche Cantidad'] = row.pelucheqty;
+        fila['Peluche Precio'] = row.peluchemoney;
+        fila['Peluche total'] = row.peluchetotal;
+
+        fila['Promociones Cantidad'] = row.promocionqty;
+        fila['Promociones Precio'] = row.promocionmoney;
+        fila['Promociones total'] = row.promociontotal;
+
+        fila['Escape Cantidad'] = row.escapeqty;
+        fila['Escape Precio'] = row.escapemoney;
+        fila['Escape total'] = row.escapetotal;
+
+        fila['Alimentos Cantidad'] = 0;
+        fila['Alimentos Precio'] = 0;
+        fila['Alimentos total'] = 0;
+
+        fila['Bebidas Cantidad'] = 0;
+        fila['Bebidas Precio'] = 0;
+        fila['Bebidas total'] = 0;
+
+
+
+        }
+
+        fila.idinterno = row.idinterno;
+        fila.session = row.session;
+        fila.tc = row.tc;
+        fila.sucursal = row.sucursal;
+        fila.paymentMode = row.paymentMode;
+        fila.client = row.client;
+        fetchedTransaccionesNew = [ ...fetchedTransaccionesNew, fila ];
+
+    } );
+
+
+
+    console.log( ' - - -' );
+
+
+
+
+
 
     //console.log("transactions:", transactions);
 

@@ -6,6 +6,10 @@ const moment = require('moment-timezone');
 const Timezone = "America/Hermosillo";
 
 
+const Users = require('../models/Users');
+const Profiles = require('../models/profilesModel');
+const Branches = require('../models/branchesModel');
+
 
 router.post('/confirmation', async (req, res) => {
     const { email,clientName,hour,game } = req.body
@@ -84,15 +88,16 @@ router.post('/confirmation', async (req, res) => {
 }
 });
 
+
 router.post('/cierre', async (req, res) => {
-    const { userName,closingAmount,cashAmount,cardAmount,differenceCash,differenceCard } = req.body
+    const { userName,closingAmount,cashAmount,cardAmount,differenceCash,differenceCard, profile } = req.body
     const { lastTokenHour, token } = await updateTokenHour();
     var location = req.body.location || "Tepic Plaza Forum";
 
     const messageContent = `
     Hola,
     <br><br>
-    Cierre de caja de ${userName} en Virtuality World ${location}.
+    Cierre de caja de ${userName} en Virtuality World - (${profile}).
     <br><br>
     Fecha: ${moment.tz(Timezone).format('DD/MM/YYYY')}
     <br>
@@ -153,6 +158,8 @@ router.post('/cierre', async (req, res) => {
         }
 
     // Send invoice data to Zoho
+    console.log(emailData);
+    // res.json({});
     const response = await axios.post('https://www.zohoapis.com/crm/v6/Contacts/3801110000049222092/actions/send_mail', emailData, { headers });
 
     // Respond with Zoho's API response
@@ -288,5 +295,36 @@ router.post('/reservation', async (req, res) => {
 });
 
 
+router.get('/user_type/:id', async(req, res) => {
+
+    try{
+        
+        const { id } = req.params;
+        const users = await Users.findById(id);
+
+        const nameUser = `${users.firstName} ${users.lastName}`;
+
+        if( users.perfil === '' ){
+            res.status(200).json({ nameUser, profile: 'ADMIN' });
+        }else{
+            const profile = await Profiles.findById(users.perfil);
+            if( profile.tipoUsuario === 'gerente' ){
+                res.status(200).json({ nameUser, profile: profile.nombrePerfil.toLocaleUpperCase() });
+            }else{
+
+                const branches = await Branches.findById(profile.sucursal);
+                res.status(200).json({ nameUser, profile: branches.nameBranches.toLocaleUpperCase() });
+            }
+        }
+
+        
+
+    } catch (error) {
+        console.error(error.response ? error.response.data : error);
+        // res.status(500).json({ message: "Error processing the request" });
+        res.status(500).json({ nameUser: '--', profile: '--' });
+    }
+
+});
 
 module.exports = router;
