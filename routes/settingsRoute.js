@@ -26,12 +26,14 @@ router.get('/', async (req, res) => {
  
   try {
 
-    const branchFilter = branches && branches.length > 0 ? { sucursal: { $in: branches } } : {};
+    const branchFilter = branches && branches.length > 0 ? [ { sucursal: { $in: branches } }, { sucursal: { $exists: false } } ] : {};
     console.log("branchFilter:", branchFilter);
+    // console.log( " branches ", JSON.stringify(branches) );
     // Find transactions within the date range and filter by selected branches
     const transactions = await Transaction.find({
       date: { $gte: startDate, $lte: endDate },
-      ...branchFilter
+      $or: branchFilter  // Documentos sin el campo 'sucursal'
+      
     });
 
 
