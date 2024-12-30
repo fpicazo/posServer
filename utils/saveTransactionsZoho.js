@@ -7,7 +7,7 @@ const Types = require('../models/typesModel');
 const saveDataZoho = async (req, res) => {
     let date = req.query.date;
     let sucursal = req.query.sucursal;
-    console.log("date", date);
+    console.log("date", date, "sucursal", sucursal);
     try {
 
         // Define the date for the query
