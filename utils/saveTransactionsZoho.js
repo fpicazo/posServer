@@ -114,7 +114,6 @@ const saveDataZoho = async (req, res) => {
             fila['Bebidas total'] = 0;
 
 
-
             }
 
             fila.idinterno = row.idinterno;
@@ -126,7 +125,6 @@ const saveDataZoho = async (req, res) => {
             fetchedTransaccionesNew = [ ...fetchedTransaccionesNew, fila ];
 
         } );
-
 
 
         const totals = {};
@@ -159,11 +157,10 @@ const saveDataZoho = async (req, res) => {
         });
         console.log("Summed Totals: ", totalsNew);
 
-
         const lineItems = [];
         Object.keys(totals).forEach(totalKey => {
             const conceptName = totalKey.replace('total', '');
-            const { item_id, name } = getItemIdByConcept(conceptName);
+            const { item_id, name } = getItemIdByConcept(conceptName,sucursal);
 
             const moneyKey = totalKey.replace('total', '');
             const amountConcept = totals[totalKey];
@@ -179,11 +176,10 @@ const saveDataZoho = async (req, res) => {
             return res.status(400).json({ message: "No valid concepts found for invoicing" });
         }
 
-
         const lineItemsNew = [];
         Object.keys(totalsNew).forEach(totalKey => {
             const conceptName = totalKey.replace('total', '');
-            const { item_id, name } = getItemIdByConcept(conceptName);
+            const { item_id, name } = getItemIdByConcept(conceptName,sucursal);
 
             const moneyKey = totalKey.replace('total', '');
             const amountConcept = totalsNew[totalKey];
@@ -198,7 +194,6 @@ const saveDataZoho = async (req, res) => {
         if (lineItemsNew.length === 0) {
             return res.status(400).json({ message: "No valid concepts found for invoicing" });
         }
-
 
         // console.log(
         //     { 
@@ -221,19 +216,25 @@ const saveDataZoho = async (req, res) => {
         const { lastTokenHour, token } = await updateTokenHour();
         console.log("token: ", token);
 
+        if (sucursal === '6735e8fe3cbf3096493afa5e') {
+          var  customer_id = "2301987000015815092";
+        } else if (sucursal === '6767682b3b3a0a728a7025f6') {
+            customer_id = "2301987000020222170";
+        }
+
         // Construct the invoice data
         const invoiceData = {
-            customer_id: "2301987000015815092",
-            line_items: lineItemsNew
+            customer_id: customer_id,
+            line_items: lineItemsNew,
+            date:date,
         };
-
 
         const headers = {
             'Authorization': `Zoho-oauthtoken ${token}`,
             'X-Zoho-Organization-Id': "719250654"
         };
 
-
+        console.log("invoiceData: ", invoiceData);
 
         // Send invoice data to Zoho
         const response = await axios.post('https://books.zoho.com/api/v3/invoices?organization_id=719250654', invoiceData, { headers });
@@ -265,17 +266,21 @@ const saveDataZoho = async (req, res) => {
 
         
 
-
     } catch (error) {
         console.error(error.response ? error.response.data : error);
         res.status(500).json({ message: "Error processing the request" });
     }
 };
 
-
 // Function to map concept name to item_id and name
-const getItemIdByConcept = (concept) => {
-    const conceptItemMap = {
+const getItemIdByConcept = (concept,sucursal) => {
+
+    var conceptItemMap = {};
+    console.log("sucursal -- ", sucursal);
+
+    if(sucursal === '6735e8fe3cbf3096493afa5e'){
+
+    conceptItemMap = {
         'campobatalla': { item_id: '2301987000013028009', name: 'Campo de batalla' },
         'Campo de Batalla': { item_id: '2301987000013028009', name: 'Campo de batalla' },
 
@@ -302,10 +307,47 @@ const getItemIdByConcept = (concept) => {
 
         'promociones': { item_id: '2301987000016487026', name: 'Promociones' },
         'Promocion': { item_id: '2301987000016487026', name: 'Promociones' },
+
+        'escape': { item_id: '2301987000019413551', name: 'Escape Room' },
+        'Escape': { item_id: '2301987000019413551', name: 'Escape Room' },
         // Add other concepts as needed
     };
+} else if(sucursal === '6767682b3b3a0a728a7025f6'){
+
+    conceptItemMap = {
+        'campobatalla': { item_id: '2301987000020222209', name: 'Campo de batalla' },
+        'Campo de Batalla': { item_id: '2301987000020222209', name: 'Campo de batalla' },
+
+        'juegos': { item_id: '2301987000020222228', name: 'Juegos' },
+        'Maquinas': { item_id: '2301987000020222228', name: 'Juegos' },
+
+        'cabina': { item_id: '2301987000020222247', name: 'Cabina' },
+        'Cabinas Inmersivas': { item_id: '2301987000020222247', name: 'Cabina' },
+
+        'tarjeta': { item_id: '2301987000020222266', name: 'Tarjeta' },
+        'Tarjeta': { item_id: '2301987000020222266', name: 'Tarjeta' },
+
+        'andador': { item_id: '2301987000020222291', name: 'Andador' },
+        'Andador Virtual': { item_id: '2301987000020222291', name: 'Andador' },
+
+        'eventos': { item_id: '2301987000020222310', name: 'Eventos' },
+        'Eventos': { item_id: '2301987000020222310', name: 'Eventos' },
+
+        'escape': { item_id: '2301987000020222190', name: 'Escape Room' },
+        'Escape': { item_id: '2301987000020222190', name: 'Escape Room' },
+
+        'peluche': { item_id: '2301987000020222329', name: 'Peluche' },
+        'Peluche': { item_id: '2301987000020222329', name: 'Peluche' },
+
+        'promociones': { item_id: '2301987000020222348', name: 'Promociones' },
+        'Promocion': { item_id: '2301987000020222348', name: 'Promociones' },
+        // Add other concepts as needed
+    };
+}
+
     return conceptItemMap[concept.trim()] || { item_id: 'default_item_id', name: 'Default Item' };
 };
 
-
 module.exports = saveDataZoho;
+
+
