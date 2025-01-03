@@ -69,9 +69,9 @@ router.get('/one/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const { nombreSucursal, empresa, estado, direccion, telefono, abierto } = req.body;
+        const { nombreSucursal, empresa, estado, moneda, direccion, telefono, abierto } = req.body;
 
-        const branches = Branches({ nameBranches: nombreSucursal, company: empresa, state: estado, address: direccion, phone: telefono, open: abierto });
+        const branches = Branches({ nameBranches: nombreSucursal, company: empresa, state: estado, currency: moneda, address: direccion, phone: telefono, open: abierto });
         await branches.save();
 
         res.status(200).json({ menaje: 'ok' });
@@ -84,9 +84,9 @@ router.post('/', async (req, res) => {
 
 router.put('/', async (req, res) => {
     try {
-        const { _id, nombreSucursal, empresa, estado, direccion, telefono, abierto } = req.body;
+        const { _id, nombreSucursal, empresa, estado, moneda, direccion, telefono, abierto } = req.body;
 
-        await Branches.findByIdAndUpdate(_id, { nameBranches: nombreSucursal, company: empresa, state: estado, address: direccion, phone: telefono, open: abierto });
+        await Branches.findByIdAndUpdate(_id, { nameBranches: nombreSucursal, company: empresa, state: estado, currency: moneda, address: direccion, phone: telefono, open: abierto });
 
         res.status(200).json({ menaje: 'ok' });
     } catch (error) {

@@ -9,6 +9,7 @@ const Types = require('../models/typesModel');
 const moment = require('moment-timezone');
 const Timezone = "America/Hermosillo";
 
+const Branches = require('../models/branchesModel');
 
 // POST route to add a new note
 router.post('/', async (req, res) => {
@@ -122,7 +123,7 @@ router.post('/', async (req, res) => {
       
     });
 
-
+    const branches = await Branches.findById(sucursal);
     const newTransaction = new Transactions({
       date,
       amount,
@@ -164,8 +165,8 @@ router.post('/', async (req, res) => {
       cupon,
       discount,
       tc: tc,
-      sucursal: sucursal
-
+      sucursal: sucursal,
+      currency: branches.currency
 
 
         });

@@ -60,7 +60,9 @@ const TransaccionSchema = new mongoose.Schema({
       required: false
     },
     tc:{ type: String, required: false},
-    sucursal:{ type: String, required: false}
+    sucursal:{ type: String, required: false},
+    currency:{ type: String, required: false}
+    
     
   }, { timestamps: true });
 

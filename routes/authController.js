@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 const User = require('../models/Users');
 const Profiles = require('../models/profilesModel');
+const Branches = require('../models/branchesModel');
 require('dotenv').config();
 
 router.post('/login', async (req, res) => {
@@ -33,9 +34,16 @@ router.post('/login', async (req, res) => {
         if( user.perfil !== '' ){
           perfil = await Profiles.findOne({ _id: user.perfil });
         }
+
+        let lng = 'es';
+        console.log( '=========================', perfil.sucursal );
+        if( perfil.sucursal !== undefined ){
+          let branches = await Branches.findById(perfil.sucursal);
+          lng = branches.currency;
+        }
         
         console.log( '---------------------------------------------------------------------' )
-        console.log( perfil )
+        console.log( ' perfil ', perfil )
         return res.status(200).json(
                                       { token,
                                         role: user.role,
@@ -43,6 +51,7 @@ router.post('/login', async (req, res) => {
                                         firstName: user.firstName,
                                         lastName: user.lastName,
                                         sucursal: user.perfil !== '' ? perfil.sucursal : '',
+                                        lng: lng,
                                         perfil: user.perfil
                                       }
                                     );
