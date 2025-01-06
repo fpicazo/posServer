@@ -344,6 +344,38 @@ const getItemIdByConcept = (concept,sucursal) => {
         // Add other concepts as needed
     };
 }
+else if(sucursal === '676a75a28854b17ed8727f62'){
+
+    conceptItemMap = {
+        'campobatalla': { item_id: '2301987000020466007', name: 'Campo de batalla' },
+        'Campo de Batalla': { item_id: '2301987000020466007', name: 'Campo de batalla' },
+
+        'juegos': { item_id: '2301987000020466026', name: 'Juegos' },
+        'Maquinas': { item_id: '2301987000020466026', name: 'Juegos' },
+
+        'cabina': { item_id: '2301987000020466045', name: 'Cabina' },
+        'Cabinas Inmersivas': { item_id: '2301987000020466045', name: 'Cabina' },
+
+        'tarjeta': { item_id: '2301987000020466064', name: 'Tarjeta' },
+        'Tarjeta': { item_id: '2301987000020466064', name: 'Tarjeta' },
+
+        'andador': { item_id: '2301987000020466083', name: 'Andador' },
+        'Andador Virtual': { item_id: '2301987000020466083', name: 'Andador' },
+
+        'eventos': { item_id: '2301987000020466102', name: 'Eventos' },
+        'Eventos': { item_id: '2301987000020466102', name: 'Eventos' },
+
+        'escape': { item_id: '2301987000020466121', name: 'Escape Room' },
+        'Escape': { item_id: '2301987000020466121', name: 'Escape Room' },
+
+        'peluche': { item_id: '2301987000020466140', name: 'Peluche' },
+        'Peluche': { item_id: '2301987000020466140', name: 'Peluche' },
+
+        'promociones': { item_id: '2301987000020466159', name: 'Promociones' },
+        'Promocion': { item_id: '2301987000020466159', name: 'Promociones' },
+        // Add other concepts as needed
+    };
+}
 
     return conceptItemMap[concept.trim()] || { item_id: 'default_item_id', name: 'Default Item' };
 };
