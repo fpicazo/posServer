@@ -221,6 +221,9 @@ const saveDataZoho = async (req, res) => {
         } else if (sucursal === '6767682b3b3a0a728a7025f6') {
             customer_id = "2301987000020222170";
         }
+        else if (sucursal === '677c1f827fbcf502f61e9cae') {
+            customer_id = "2301987000020544135";
+        }
 
         // Construct the invoice data
         const invoiceData = {
@@ -277,6 +280,7 @@ const getItemIdByConcept = (concept,sucursal) => {
 
     var conceptItemMap = {};
     console.log("sucursal -- ", sucursal);
+    console.log("concept -- ", concept);
 
     if(sucursal === '6735e8fe3cbf3096493afa5e'){
 
@@ -344,7 +348,7 @@ const getItemIdByConcept = (concept,sucursal) => {
         // Add other concepts as needed
     };
 }
-else if(sucursal === '676a75a28854b17ed8727f62'){
+else if(sucursal === '677c1f827fbcf502f61e9cae'){
 
     conceptItemMap = {
         'campobatalla': { item_id: '2301987000020466007', name: 'Campo de batalla' },
