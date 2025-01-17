@@ -221,6 +221,9 @@ const saveDataZoho = async (req, res) => {
         } else if (sucursal === '6767682b3b3a0a728a7025f6') {
             customer_id = "2301987000020222170";
         }
+        else if (sucursal === '677c1f827fbcf502f61e9cae') {
+            customer_id = "2301987000020544135";
+        }
 
         // Construct the invoice data
         const invoiceData = {
@@ -277,6 +280,7 @@ const getItemIdByConcept = (concept,sucursal) => {
 
     var conceptItemMap = {};
     console.log("sucursal -- ", sucursal);
+    console.log("concept -- ", concept);
 
     if(sucursal === '6735e8fe3cbf3096493afa5e'){
 
@@ -341,6 +345,38 @@ const getItemIdByConcept = (concept,sucursal) => {
 
         'promociones': { item_id: '2301987000020222348', name: 'Promociones' },
         'Promocion': { item_id: '2301987000020222348', name: 'Promociones' },
+        // Add other concepts as needed
+    };
+}
+else if(sucursal === '677c1f827fbcf502f61e9cae'){
+
+    conceptItemMap = {
+        'campobatalla': { item_id: '2301987000020466007', name: 'Campo de batalla' },
+        'Campo de Batalla': { item_id: '2301987000020466007', name: 'Campo de batalla' },
+
+        'juegos': { item_id: '2301987000020466026', name: 'Juegos' },
+        'Maquinas': { item_id: '2301987000020466026', name: 'Juegos' },
+
+        'cabina': { item_id: '2301987000020466045', name: 'Cabina' },
+        'Cabinas Inmersivas': { item_id: '2301987000020466045', name: 'Cabina' },
+
+        'tarjeta': { item_id: '2301987000020466064', name: 'Tarjeta' },
+        'Tarjeta': { item_id: '2301987000020466064', name: 'Tarjeta' },
+
+        'andador': { item_id: '2301987000020466083', name: 'Andador' },
+        'Andador Virtual': { item_id: '2301987000020466083', name: 'Andador' },
+
+        'eventos': { item_id: '2301987000020466102', name: 'Eventos' },
+        'Eventos': { item_id: '2301987000020466102', name: 'Eventos' },
+
+        'escape': { item_id: '2301987000020466121', name: 'Escape Room' },
+        'Escape': { item_id: '2301987000020466121', name: 'Escape Room' },
+
+        'peluche': { item_id: '2301987000020466140', name: 'Peluche' },
+        'Peluche': { item_id: '2301987000020466140', name: 'Peluche' },
+
+        'promociones': { item_id: '2301987000020466159', name: 'Promociones' },
+        'Promocion': { item_id: '2301987000020466159', name: 'Promociones' },
         // Add other concepts as needed
     };
 }
