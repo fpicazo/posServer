@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const roomsSchema = new mongoose.Schema(
     {
-        idBranches: { type: String, required: true },
+        idBranches: { type: String },
         nameRooms: { type: String, required: true },
         type: { type: String, required: true },
         startTime: { type: String, required: true },

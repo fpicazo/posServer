@@ -23,6 +23,7 @@ const typesRoutes = require('./routes/typesRoutes');
 const rooms = require('./routes/roomsRoute');
 const roomsGetRoutes = require('./routes/roomsGetRoutes');
 const taxtCompanyRoutes = require('./routes/taxtCompanyRoutes');
+const customer = require('./routes/customerRoutes');
 
 const saveDataZoho = require('./utils/saveTransactionsZoho');
 
@@ -60,7 +61,7 @@ app.use('/profiles', profilesRoutes);
 app.use('/types', typesRoutes);
 app.use('/rooms', rooms);
 app.use('/taxtCompany', taxtCompanyRoutes);
-
+app.use('/customer', customer);
 
 
 

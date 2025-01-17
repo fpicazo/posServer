@@ -10,6 +10,9 @@ const { updateTokenHour } = require('../utils/checkAndRefreshToken');
 const axios = require('axios');
 const Timezone = "America/Hermosillo";
 
+const ReservationCourse = require('../models/reservationCourseModel');
+
+
 const createPaymentLink = async (res, data) => {
   try {
     const { lastTokenHour, token } = await updateTokenHour(); // Ensure updateTokenHour returns an object with these properties
@@ -231,6 +234,7 @@ router.post('/block', async (req, res) => {
   }
 });
 
+
 router.post('/addreservationclient', async (req, res) => {
   console.log(req.body);
   const { players, date, startDate, endDate, location, client } = req.body;
@@ -286,6 +290,7 @@ router.post('/addreservationclient', async (req, res) => {
   }
 });
 
+
 router.post('/checkin', async (req, res) => {
   //console.log(req.body);
  const {birthDate,email,name,phone,signatureImg,idreservacion } = req.body;
@@ -322,6 +327,7 @@ try {
 
 
 });
+
 
 // GET route to fetch all notes
 router.get('/avaibility', async (req, res) => {
@@ -399,6 +405,7 @@ router.get('/avaibility', async (req, res) => {
   }
 });
 
+
 // GET route to fetch all notes
 router.get('/', async (req, res) => {
   const { startDate } = req.query;
@@ -450,6 +457,7 @@ router.get('/blocked', async (req, res) => {
   }
 });
 
+
 router.get('/booked', async (req, res) => {
   try {
     const reservations = await Reservation.find({ status: "booked" });
@@ -459,6 +467,7 @@ router.get('/booked', async (req, res) => {
     res.status(500).json({ message: "Error fetching booked reservations" });
   }
 });
+
 
 router.get('/individual', async (req, res) => {
   const { startDate } = req.query;
@@ -627,6 +636,183 @@ router.delete('/:id', async (req, res) => {
   }
 }
 );
+
+
+
+router.post('/curso', async (req, res) => {
+
+  console.log("New reservacion" + req.body);
+  
+  try {
+
+    const { phone, firstName, lastName, email, date,time, players, amountIndiv,idinterno } = req.body;
+    console.log("date " + date);
+    let game = req.body.game;
+    let clientId = req.body.clientId;
+    let status = "pending";
+    let modo = req.body.modo;
+    let location = req.body.location;
+    let startDate;
+    if (!location) {
+      location = "Tepic";
+    }
+
+
+    if (!time) {
+
+      startDate = moment.tz(date, Timezone).toDate();
+
+    } else {
+
+      const dateTimeString = `${date} ${time}`;
+      console.log("dateTimeString " + dateTimeString);
+      startDate = moment.tz(dateTimeString, Timezone).toDate();
+
+    }
+
+    console.log("startDate " + startDate);
+    const endDate = moment.tz(startDate, Timezone).add(30, 'minutes').toDate(); // Add 30 minutes to startDate
+
+    let existingClient;
+    if (clientId) {
+      existingClient = await Client.findById(clientId);
+    } else {
+      existingClient = await Client.findOne({
+        $or: [
+          { phone: phone },
+          { email: email }
+        ]
+      });
+    }
+
+    console.log("search existing client " + existingClient);
+    if (!existingClient && !clientId) {
+      const newClient = new Client({
+        phone,
+        firstName,
+        lastName,
+        email,
+      });
+      await newClient.save();
+      clientId = newClient._id;
+    } else {
+      clientId = existingClient ? existingClient._id : clientId;
+    }
+
+    if (!game) {
+      game = "Rancho Embrujado";
+    }
+
+    if (!modo || modo !== "online") {
+      modo = "pos";
+      status = "booked";
+    }
+    console.log("game " + game);
+
+    const maxClients = 50;
+
+    console.log("StartDate " + startDate);
+
+    // Check if reservation exists
+    let existingReservation = await Reservation.findOne({ startDate, location });
+
+    if (!existingReservation) {
+      // Create new reservation if it doesn't exist
+      const newReservation = new Reservation({
+        date,
+        location,
+        participantsbooked: players,
+        availableparticipants: maxClients - players,
+        startDate,
+        endDate,
+        game,
+        amountIndiv,
+        modo,
+        idinterno,
+      });
+
+      console.log(newReservation);
+      await newReservation.save();
+
+      const newReservationXCliente = new ReservationXCliente({
+        players,
+        date,
+        location,
+        startDate,
+        endDate,
+        game,
+        client: clientId,
+        reservation: newReservation._id,
+        amountIndiv,
+        modo,
+        status: status,
+        idinterno,
+      });
+
+      console.log("New reservation cliente " + newReservationXCliente);
+      const createreservacioncliente = newReservationXCliente.save();
+      console.log("New reservation cliente220 " + createreservacioncliente);
+
+      res.status(201).json(newReservation);
+    } else {
+
+      // Update existing reservation if it exists
+      const newPlayersNumber = existingReservation.participantsbooked + players;
+      existingReservation = await Reservation.findByIdAndUpdate(
+        existingReservation._id,
+        {
+          participantsbooked: newPlayersNumber,
+          availableparticipants: maxClients - newPlayersNumber
+        },
+        { new: true }
+      );
+
+      const newReservationXCliente = new ReservationXCliente({
+        players,
+        date,
+        location,
+        startDate,
+        endDate,
+        game,
+        client: clientId,
+        reservation: existingReservation._id,
+        amountIndiv,
+        modo,
+        status: status,
+        idinterno,
+      });
+
+      console.log("Updated reservation cliente " + newReservationXCliente);
+      const createreservacioncliente = await newReservationXCliente.save();
+      console.log("Updated reservation cliente2 " + createreservacioncliente);
+
+      res.status(200).json(existingReservation);
+    }
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error adding Reservation" });
+  }
+  
+});
+
+
+
+router.get('/reservationcourse/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    
+    const reservationCourse = await ReservationCourse.findById(id);
+
+    res.json(reservationCourse);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching reservations" });
+  }
+});
+
+
 
 module.exports = router;
 

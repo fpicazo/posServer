@@ -9,7 +9,8 @@ const branchesSchema = new mongoose.Schema(
         currency: { type: String, required: true },
         address: { type: String, required: true },
         phone: { type: String, required: true },
-        open: { type: Boolean, required: true }
+        open: { type: Boolean, required: true },
+        stripe: { type: String }
     }, 
     { 
         timestamps: true

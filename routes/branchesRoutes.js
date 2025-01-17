@@ -96,4 +96,18 @@ router.put('/', async (req, res) => {
 });
 
 
+router.put('/stripe', async (req, res) => {
+    try {
+        const { id, stripe } = req.body;
+
+        await Branches.findByIdAndUpdate(id, { stripe: stripe });
+
+        res.status(200).json({ menaje: 'ok' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+
 module.exports = router;

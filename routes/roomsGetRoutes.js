@@ -6,7 +6,7 @@ const Rooms = require('../models/roomsModel');
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const rooms = await Rooms.find({ idBranches: id });
+        const rooms = await Rooms.find();
         res.status(200).json(rooms);
     } catch (error) {
         console.error(error);
