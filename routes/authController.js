@@ -15,6 +15,7 @@ require('dotenv').config();
 
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
+    console.log( req.body );
     if (!email || !password) {
         return res.status(400).json({ message: "email and password are required" });
     }
@@ -41,12 +42,12 @@ router.post('/login', async (req, res) => {
         }
 
         let lng = 'es';
-        console.log( '=========================', perfil.sucursal );
-        if( perfil.sucursal !== undefined ){
+        // console.log( '=========================', perfil.sucursal );
+        if( perfil.sucursal !== undefined && Array.isArray(perfil.sucursal) ){
+          console.log( ' -- aca ---------------' );
           let branches = await Branches.findById(perfil.sucursal);
           lng = branches.currency;
         }
-        
         console.log( '---------------------------------------------------------------------' )
         console.log( ' perfil ', perfil )
         return res.status(200).json(
