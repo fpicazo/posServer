@@ -206,11 +206,16 @@ const order_data = ( tkr ) => {
 
 const find_crm = async( tk, email, pass ) => {
 
-  const consumirCrm = axios.create({ baseURL: 'https://www.zohoapis.com/crm/v2.1/Empresas_Cursos/', headers: { 'Authorization': `Zoho-oauthtoken ${tk}` } });
-  const respCRM = await consumirCrm.get(`search?email=${email}`);
+  const consumirCrm = axios.create({ baseURL: 'https://www.zohoapis.com/crm/v2.1/Accounts/', headers: { 'Authorization': `Zoho-oauthtoken ${tk}` } });
+  const respCRM = await consumirCrm.get('search', {
+    params: {
+      criteria: `(Correo_electr_nico:equals:${email})`
+    }
+  });
+
   if( respCRM.status === 200 ){
 
-    const record = respCRM.data.data.find( x => x.Clave_Acceso === pass && x.Membres_a_Activa === true );
+    const record = respCRM.data.data.find( x => x.RFC_o_CUIT === pass && x.Estatus_Capacitacion_Maxaahoc === 'Activo' );
     return record;
 
   }else{
@@ -227,6 +232,7 @@ const find_crm = async( tk, email, pass ) => {
 
 router.post('/loginsala', async (req, res) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
       return res.status(400).json({ message: "email and password are required" });
   }
@@ -234,8 +240,7 @@ router.post('/loginsala', async (req, res) => {
   const tkr = await refresh_token_crm();
   const tk = order_data( tkr.tkr );
 
-
-
+  
   try {
       const user = await User.findOne({ email });
       const customer = await find_crm( tk, email, password );
@@ -282,14 +287,14 @@ router.post('/loginsala', async (req, res) => {
         let lng = 'es';
         const token = jwt.sign({ email, id: customer.id }, process.env.SECRET_KEY, { expiresIn: '48h' });
 
-        const { id, Email, Name, Membres_a_Activa, R_F_C, empleados } = customer;
-        const campos = { id, Email, Name, Membres_a_Activa, R_F_C, empleados };
+        const { id, Correo_electr_nico, Account_Name, Estatus_Capacitacion_Maxaahoc, RFC_o_CUIT, Membresia } = customer;
+        const campos = { id, Email: Correo_electr_nico, Name: Account_Name, Membres_a_Activa: Estatus_Capacitacion_Maxaahoc, R_F_C: RFC_o_CUIT, empleados : Membresia };
 
         return res.status(200).json(
           { token,
             role: 'customer',
             id: customer.id,
-            firstName: customer.Name,
+            firstName: customer.Account_Name,
             lastName: '',
             sucursal: '',
             lng: lng,

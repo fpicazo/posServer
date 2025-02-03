@@ -12,9 +12,34 @@ router.get('/:tk', async (req, res) => {
         const tkr = await refresh_token_crm_update( tk );
         
         const consumir = axios.create({ baseURL: 'https://www.zohoapis.com/crm/v2.1/', headers: { 'Authorization': `Zoho-oauthtoken ${tkr.tko}` } });
-        const respCM = await consumir.get('Empresas_Cursos');
-        const record = respCM.data.data;
-        res.status(200).json({ tk: tkr.tk, data: record });
+        
+        let totalRecords = 0;
+        let allRecords = []; 
+        let page = 1;
+        let moreRecords = true;
+        while(moreRecords){
+            try {
+
+                const respCM = await consumir.get(`Accounts?per_page=200&page=${page}`);
+                const data = respCM.data;
+
+                if (data.data) {
+                    allRecords = [...allRecords, ...data.data]; // Agregar nuevos registros sin duplicados
+                    totalRecords += data.data.length;
+                }
+
+                moreRecords = data.info?.more_records || false;
+                page++;
+
+            } catch (error) {
+                console.error("Error al obtener registros:", error.response?.data || error.message);
+                break;
+            }
+        }
+
+        // console.log( JSON.stringify(allRecords) );
+        // const record = respCM.data.data;
+        res.status(200).json({ tk: tkr.tk, data: allRecords.filter( x => x.Layout.id === '3801110000056376407' ) });
 
     } catch (error) {
         // console.error(error);
