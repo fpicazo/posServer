@@ -67,11 +67,11 @@ const axios = require('axios');
 
     let stripeSecretKey = ''
     if( _id === '6735e8fe3cbf3096493afa5e' ){
-      stripeSecretKey = process.env.STRIPE_SECRET_PRUEBA_PUVA;
+      stripeSecretKey = process.env.STRIPE_SECRET_TEPIC;
     }else if( _id === '6767682b3b3a0a728a7025f6' ){
-      stripeSecretKey = process.env.STRIPE_SECRET_PRUEBA_GUA;
-    }else if( _id === '6777d2ef04406efc1a932db9' ){
-      stripeSecretKey = process.env.STRIPE_SECRET_PRUEBA_MAR;
+      stripeSecretKey = process.env.STRIPE_SECRET_GUADA;
+    }else if( _id === '677c1f827fbcf502f61e9cae' ){
+      stripeSecretKey = process.env.STRIPE_SECRET_VALLARTA;
     }
 
     return stripeSuc(stripeSecretKey);
@@ -174,7 +174,7 @@ const axios = require('axios');
       const 
       { 
         idBrance, razonSocial, rfc, estado, codigoPostal, plan, nombre, correoElectronico,
-        telefono, maximo, costo
+        telefono, maximo, costo, regimenFiscal, usoCfdi, sucursal
       } = req.body;
 
       const tkr = await refresh_token_crm();
@@ -238,7 +238,10 @@ const axios = require('axios');
                 "Layout": {
                   "id": "3801110000056376407"  // ID del Layout
                 },
-                "Fecha_registro_VitualityWorld": formato
+                "Fecha_registro_VitualityWorld": formato,
+                "Regimen_Fiscal": regimenFiscal,
+                "Uso_CFDI": usoCfdi,
+                "Sucursal": sucursal
               }
           ]
 

@@ -215,7 +215,8 @@ const find_crm = async( tk, email, pass ) => {
 
   if( respCRM.status === 200 ){
 
-    const record = respCRM.data.data.find( x => x.RFC_o_CUIT === pass && x.Estatus_Capacitacion_Maxaahoc === 'Activo' );
+    // && x.Estatus_Capacitacion_Maxaahoc === 'Activo'
+    const record = respCRM.data.data.find( x => x.RFC_o_CUIT === pass  );
     return record;
 
   }else{
@@ -317,8 +318,7 @@ router.post('/loginsala', async (req, res) => {
       return res.status(500).json({ message: "Internal server error" });
   }
 }
-);`
+);
 
-`
 
 module.exports = router;
