@@ -88,12 +88,14 @@ const axios = require('axios');
       
 
       const reservationCourse = ReservationCourse({
+        idBranch: reservation.idSucursal,
         players: reservation.players,
         date: convertToLocalTime(reservation.date),
         course: reservation.course,
         location: reservation.location,
-        startDate: convertToLocalTime(reservation.startDate),
-        endDate: convertToLocalTime(reservation.endDate),
+        // startDate: convertToLocalTime(reservation.startDate),
+        // endDate: convertToLocalTime(reservation.endDate),
+        idSchedule: reservation.idHorario,
         client: reservation.client,
         contactPhone: reservation.contactPhone,
         contactEmail: reservation.contactEmail,
@@ -410,6 +412,37 @@ const axios = require('axios');
 
   });
   
+
+  router.post('/horarios', async (req, res) => {
+    try
+    {
+
+      const { idBranch, date } = req.body;
+
+      const reservationCourse = await ReservationCourse.find({ idBranch: idBranch, date: date  });
+      
+      const grouped = reservationCourse.reduce((acc, { idBranch, idSchedule, players }) => {
+        const key = `${idBranch}-${idSchedule}`;
+        
+        if (!acc[key]) {
+          acc[key] = { idBranch, idSchedule, totalPlayers: 0 };
+        }
+      
+        acc[key].totalPlayers += players;
+        return acc;
+      }, {});
+      
+      const result = Object.values(grouped);
+      
+      res.json({ actualizarJugadores: result.filter( x => x.totalPlayers < 3 ), horariosCerrados: result.filter( x => x.totalPlayers >= 3 ) });
+
+      
+    }
+    catch( error ){
+      console.error(error);
+    }
+
+  });
 
 
 module.exports = router;
