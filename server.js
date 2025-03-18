@@ -28,7 +28,7 @@ const customer = require('./routes/customerRoutes');
 const saveDataZoho = require('./utils/saveTransactionsZoho');
 
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 7507;
 
 app.use(express.json());
 app.use(cors());

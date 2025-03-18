@@ -813,6 +813,17 @@ router.get('/reservationcourse/:id', async (req, res) => {
 });
 
 
+router.get('/todo', async (req, res) => {
+  try {
+    const reservationCourse = await ReservationCourse.find();
+    res.status(200).json( { data: reservationCourse} );
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching reservations" });
+  }
+});
+
 
 module.exports = router;
 
