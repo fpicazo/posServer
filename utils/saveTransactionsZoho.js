@@ -26,7 +26,7 @@ const saveDataZoho = async (req, res) => {
 
         // Fetch the transactions
         let transactions = await Transaction.find(query);
-        // console.log("Fetched Transactions: ", JSON.stringify(transactions));
+        console.log("Fetched Transactions: ", JSON.stringify(transactions));
 
         if (transactions.length === 0) {
             console.log("No transactions found for the given date range.");
@@ -54,20 +54,31 @@ const saveDataZoho = async (req, res) => {
             fila.date = row.date;
             fila.amount = row.amount;
 
-            if( row.concepts.length > 0 ){
-            encabezadosTipos.map( ( a ) => {
-                let cuenta = row.concepts.find( x => x.type === a.tipo );
-                if( cuenta ){
-                fila[a.cantidad] = cuenta.qty;
-                fila[a.precio] = cuenta.money;
-                fila[a.total] = cuenta.total;
-                }else{
-                fila[a.cantidad] = 0;
-                fila[a.precio] = 0;
-                fila[a.total] = 0;
-                }
-            } )
-            }else{
+            // The corrected transformation logic:
+if (row.concepts.length > 0) {
+    // Initialize all fields to zero first
+    encabezadosTipos.forEach((a) => {
+      fila[a.cantidad] = 0;
+      fila[a.precio] = 0;
+      fila[a.total] = 0;
+    });
+    
+    // For each concept in the transaction, aggregate values by type
+    row.concepts.forEach((concept) => {
+      // Find the header for this concept type
+      const header = encabezadosTipos.find(h => h.tipo === concept.type);
+      if (header) {
+        // Add to existing values (instead of replacing)
+        fila[header.cantidad] += concept.qty;
+        // For price, we'll use the average if there are multiple items of same type
+        // But keep the existing price if it's the first occurrence
+        if (fila[header.cantidad] > 0) {
+          fila[header.precio] = concept.money; // Or calculate weighted average if needed
+        }
+        fila[header.total] += concept.total;
+      }
+    });
+  }else{
 
             fila['Campo de Batalla Cantidad'] = row.campobatallaqty;
             fila['Campo de Batalla Precio'] = row.campobatallamoney;
@@ -157,6 +168,16 @@ const saveDataZoho = async (req, res) => {
         });
         console.log("Summed Totals: ", totalsNew);
 
+        // Add this after both totals calculations
+const allKeys = new Set([...Object.keys(totals), ...Object.keys(totalsNew)]);
+allKeys.forEach(key => {
+    const totalValue = totals[key] || 0;
+    const totalNewValue = totalsNew[key] || 0;
+    if (totalValue !== totalNewValue) {
+        console.log(`Difference in key ${key}: totals=${totalValue}, totalsNew=${totalNewValue}`);
+    }
+});
+
         const lineItems = [];
         Object.keys(totals).forEach(totalKey => {
             const conceptName = totalKey.replace('total', '');
@@ -180,6 +201,8 @@ const saveDataZoho = async (req, res) => {
         Object.keys(totalsNew).forEach(totalKey => {
             const conceptName = totalKey.replace('total', '');
             const { item_id, name } = getItemIdByConcept(conceptName,sucursal);
+            
+
 
             const moneyKey = totalKey.replace('total', '');
             const amountConcept = totalsNew[totalKey];
@@ -240,14 +263,14 @@ const saveDataZoho = async (req, res) => {
         console.log("invoiceData: ", invoiceData);
 
         // Send invoice data to Zoho
-        const response = await axios.post('https://books.zoho.com/api/v3/invoices?organization_id=719250654', invoiceData, { headers });
+        //const response = await axios.post('https://books.zoho.com/api/v3/invoices?organization_id=719250654', invoiceData, { headers });
         // console.log( response.data.invoice.invoice_id );
 
         // // Respond with Zoho's API response
-        const id_invoice = response.data.invoice.invoice_id;
-        const maksent = await axios.post('https://books.zoho.com/api/v3/invoices/'+ id_invoice +'/status/sent?organization_id=719250654', null,{ headers });
+        //const id_invoice = response.data.invoice.invoice_id;
+       // const maksent = await axios.post('https://books.zoho.com/api/v3/invoices/'+ id_invoice +'/status/sent?organization_id=719250654', null,{ headers });
         // console.log(  )
-        res.json(maksent.data);
+       // res.json(maksent.data);
 
         // res.json({ 
         //     "dataVieja": { 
