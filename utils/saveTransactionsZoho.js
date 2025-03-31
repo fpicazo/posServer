@@ -306,6 +306,8 @@ const getItemIdByConcept = (concept,sucursal) => {
     console.log("concept -- ", concept);
 
     if(sucursal === '6735e8fe3cbf3096493afa5e'){
+        defaultItemId = '2301987000020222209'; 
+        // TEPIC
 
     conceptItemMap = {
         'campobatalla': { item_id: '2301987000013028009', name: 'Campo de batalla' },
@@ -337,9 +339,15 @@ const getItemIdByConcept = (concept,sucursal) => {
 
         'escape': { item_id: '2301987000019413551', name: 'Escape Room' },
         'Escape': { item_id: '2301987000019413551', name: 'Escape Room' },
+
+        'alimentos': { item_id: '2301987000023555097', name: 'Alimentos' },
+        'Alimentos': { item_id: '2301987000023555097', name: 'Alimentos' },
+
         // Add other concepts as needed
     };
 } else if(sucursal === '6767682b3b3a0a728a7025f6'){
+    defaultItemId = '2301987000020222209'; 
+    // GDL
 
     conceptItemMap = {
         'campobatalla': { item_id: '2301987000020222209', name: 'Campo de batalla' },
@@ -368,10 +376,15 @@ const getItemIdByConcept = (concept,sucursal) => {
 
         'promociones': { item_id: '2301987000020222348', name: 'Promociones' },
         'Promocion': { item_id: '2301987000020222348', name: 'Promociones' },
+
+        'alimentos': { item_id: '2301987000023555047', name: 'Alimentos' },
+        'Alimentos': { item_id: '2301987000023555047', name: 'Alimentos' },
         // Add other concepts as needed
     };
 }
 else if(sucursal === '677c1f827fbcf502f61e9cae'){
+    defaultItemId = '2301987000020466007';
+    // VAllarta
 
     conceptItemMap = {
         'campobatalla': { item_id: '2301987000020466007', name: 'Campo de batalla' },
@@ -400,11 +413,15 @@ else if(sucursal === '677c1f827fbcf502f61e9cae'){
 
         'promociones': { item_id: '2301987000020466159', name: 'Promociones' },
         'Promocion': { item_id: '2301987000020466159', name: 'Promociones' },
+
+        'alimentos': { item_id: '2301987000023555069', name: 'Alimentos' },
+        'Alimentos': { item_id: '2301987000023555069', name: 'Alimentos' },
         // Add other concepts as needed
     };
 }
 
-    return conceptItemMap[concept.trim()] || { item_id: 'default_item_id', name: 'Default Item' };
+    return conceptItemMap[concept.trim()] || { item_id: defaultItemId, name:'Default Item'  };
+
 };
 
 module.exports = saveDataZoho;
