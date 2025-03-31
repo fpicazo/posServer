@@ -263,14 +263,14 @@ allKeys.forEach(key => {
         console.log("invoiceData: ", invoiceData);
 
         // Send invoice data to Zoho
-        //const response = await axios.post('https://books.zoho.com/api/v3/invoices?organization_id=719250654', invoiceData, { headers });
+        const response = await axios.post('https://books.zoho.com/api/v3/invoices?organization_id=719250654', invoiceData, { headers });
         // console.log( response.data.invoice.invoice_id );
 
         // // Respond with Zoho's API response
-        //const id_invoice = response.data.invoice.invoice_id;
-       // const maksent = await axios.post('https://books.zoho.com/api/v3/invoices/'+ id_invoice +'/status/sent?organization_id=719250654', null,{ headers });
+        const id_invoice = response.data.invoice.invoice_id;
+        const maksent = await axios.post('https://books.zoho.com/api/v3/invoices/'+ id_invoice +'/status/sent?organization_id=719250654', null,{ headers });
         // console.log(  )
-       // res.json(maksent.data);
+       res.json(maksent.data);
 
         // res.json({ 
         //     "dataVieja": { 
