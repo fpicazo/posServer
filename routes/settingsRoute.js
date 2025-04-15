@@ -7,9 +7,12 @@ const moment = require('moment-timezone');
 
 const Timezone = "America/Hermosillo";
 
+const fs = require('fs');
+
 router.get('/', async (req, res) => {
+  
   var { startDate, endDate, branches } = req.query;
-  console.log("branches:", branches);
+  // console.log("branches:", branches);
   
   if (!startDate) {
     startDate = new Date();
@@ -21,13 +24,13 @@ router.get('/', async (req, res) => {
   startDate = moment.tz(startDate, Timezone).startOf('day').toDate();
   endDate = moment.tz(endDate, Timezone).endOf('day').toDate();
 
-  console.log("startDate:", startDate); 
-  console.log("endDate:", endDate);
+  // console.log("startDate:", startDate); 
+  // console.log("endDate:", endDate);
  
   try {
 
     const branchFilter = branches && branches.length > 0 ? [ { sucursal: { $in: branches } }, { sucursal: { $exists: false } } ] : {};
-    console.log("branchFilter:", branchFilter);
+    // console.log("branchFilter:", branchFilter);
     // console.log( " branches ", JSON.stringify(branches) );
     // Find transactions within the date range and filter by selected branches
     const transactions = await Transaction.find({
@@ -49,6 +52,15 @@ router.get('/', async (req, res) => {
         } ];
     } );
 
+
+    // fs.writeFile('datos.json', JSON.stringify(transactions, null, 2), (err) => {
+    //   if (err) {
+    //     console.error('Error al guardar el archivo:', err);
+    //   } else {
+    //     console.log('Archivo guardado exitosamente.');
+    //   }
+    // });
+
     let fetchedTransaccionesNew = [];
     transactions.map( ( row ) => {
         let fila = {};
@@ -59,63 +71,66 @@ router.get('/', async (req, res) => {
         fila.amount = row.amount;
 
         if( row.concepts.length > 0 ){
-        encabezadosTipos.map( ( a ) => {
-            let cuenta = row.concepts.find( x => x.type === a.tipo );
-            if( cuenta ){
-            fila[a.cantidad] = cuenta.qty;
-            fila[a.precio] = cuenta.money;
-            fila[a.total] = cuenta.total;
-            }else{
-            fila[a.cantidad] = 0;
-            fila[a.precio] = 0;
-            fila[a.total] = 0;
-            }
-        } )
+          
+          encabezadosTipos.map( ( a ) => {
+              
+              let cuenta = row.concepts.find( x => x.type === a.tipo );
+              if( cuenta ){
+              fila[a.cantidad] = cuenta.qty;
+              fila[a.precio] = cuenta.money;
+              fila[a.total] = cuenta.total;
+              }else{
+              fila[a.cantidad] = 0;
+              fila[a.precio] = 0;
+              fila[a.total] = 0;
+              }
+          } )
+
         }else{
 
-        fila['Campo de Batalla Cantidad'] = row.campobatallaqty;
-        fila['Campo de Batalla Precio'] = row.campobatallamoney;
-        fila['Campo de Batalla total'] = row.campobatallatotal;
+          fila['Campo de Batalla Cantidad'] = row.campobatallaqty;
+          fila['Campo de Batalla Precio'] = row.campobatallamoney;
+          fila['Campo de Batalla total'] = row.campobatallatotal;
 
-        fila['Maquinas Cantidad'] = row.juegosqty;
-        fila['Maquinas Precio'] = row.juegosmoney;
-        fila['Maquinas total'] = row.juegostotal;
+          fila['Maquinas Cantidad'] = row.juegosqty;
+          fila['Maquinas Precio'] = row.juegosmoney;
+          fila['Maquinas total'] = row.juegostotal;
 
-        fila['Cabinas Inmersivas Cantidad'] = row.cabinaqty;
-        fila['Cabinas Inmersivas Precio'] = row.cabinamoney;
-        fila['Cabinas Inmersivas total'] = row.cabinatotal;
+          fila['Cabinas Inmersivas Cantidad'] = row.cabinaqty;
+          fila['Cabinas Inmersivas Precio'] = row.cabinamoney;
+          fila['Cabinas Inmersivas total'] = row.cabinatotal;
 
-        fila['Tarjeta Cantidad'] = row.tarjetaqty;
-        fila['Tarjeta Precio'] = row.tarjetamoney;
-        fila['Tarjeta total'] = row.tarjetatotal;
+          fila['Tarjeta Cantidad'] = row.tarjetaqty;
+          fila['Tarjeta Precio'] = row.tarjetamoney;
+          fila['Tarjeta total'] = row.tarjetatotal;
 
-        fila['Andador Virtual Cantidad'] = row.andadorqty;
-        fila['Andador Virtual Precio'] = row.andadormoney;
-        fila['Andador Virtual total'] = row.andadortotal;
+          fila['Andador Virtual Cantidad'] = row.andadorqty;
+          fila['Andador Virtual Precio'] = row.andadormoney;
+          fila['Andador Virtual total'] = row.andadortotal;
 
-        fila['Eventos Cantidad'] = row.eventosqty;
-        fila['Eventos Precio'] = row.eventosmoney;
-        fila['Eventos total'] = row.eventostotal;
+          fila['Eventos Cantidad'] = row.eventosqty;
+          fila['Eventos Precio'] = row.eventosmoney;
+          fila['Eventos total'] = row.eventostotal;
 
-        fila['Peluche Cantidad'] = row.pelucheqty;
-        fila['Peluche Precio'] = row.peluchemoney;
-        fila['Peluche total'] = row.peluchetotal;
+          fila['Peluche Cantidad'] = row.pelucheqty;
+          fila['Peluche Precio'] = row.peluchemoney;
+          fila['Peluche total'] = row.peluchetotal;
 
-        fila['Promociones Cantidad'] = row.promocionqty;
-        fila['Promociones Precio'] = row.promocionmoney;
-        fila['Promociones total'] = row.promociontotal;
+          fila['Promociones Cantidad'] = row.promocionqty;
+          fila['Promociones Precio'] = row.promocionmoney;
+          fila['Promociones total'] = row.promociontotal;
 
-        fila['Escape Cantidad'] = row.escapeqty;
-        fila['Escape Precio'] = row.escapemoney;
-        fila['Escape total'] = row.escapetotal;
+          fila['Escape Cantidad'] = row.escapeqty;
+          fila['Escape Precio'] = row.escapemoney;
+          fila['Escape total'] = row.escapetotal;
 
-        fila['Alimentos Cantidad'] = 0;
-        fila['Alimentos Precio'] = 0;
-        fila['Alimentos total'] = 0;
+          fila['Alimentos Cantidad'] = 0;
+          fila['Alimentos Precio'] = 0;
+          fila['Alimentos total'] = 0;
 
-        fila['Bebidas Cantidad'] = 0;
-        fila['Bebidas Precio'] = 0;
-        fila['Bebidas total'] = 0;
+          fila['Bebidas Cantidad'] = 0;
+          fila['Bebidas Precio'] = 0;
+          fila['Bebidas total'] = 0;
 
 
 
@@ -133,13 +148,6 @@ router.get('/', async (req, res) => {
 
 
 
-    console.log( ' - - -' );
-
-
-
-
-
-
     //console.log("transactions:", transactions);
 
     const transactionsEliminadas = await TransactionEliminadas.find({ date: { $gte: startDate, $lte: endDate },
@@ -147,18 +155,36 @@ router.get('/', async (req, res) => {
 
     // Summing totals by concept
     const totals = {};
-    transactions.forEach(transaction => {
-      const data = transaction._doc; // Access the actual data within the transaction document
-      Object.keys(data).forEach(key => {
-        if (key.endsWith('total') && data[key] > 0) {
+    // transactions.forEach(transaction => {
+    //   const data = transaction._doc; // Access the actual data within the transaction document
+    //   Object.keys(data).forEach(key => {
+    //     if (key.endsWith('total') && data[key] > 0) {
+    //       if (!totals[key]) {
+    //         totals[key] = 0;
+    //       }
+    //       totals[key] += data[key];
+    //     }
+    //   });
+    // });
+
+    fetchedTransaccionesNew.forEach(transaction => {
+      Object.keys(transaction).forEach(key => {
+        if (key.endsWith('total') && transaction[key] > 0) {
           if (!totals[key]) {
             totals[key] = 0;
           }
-          totals[key] += data[key];
+          totals[key] += transaction[key];
         }
       });
     });
 
+    // fs.writeFile('datos2.json', JSON.stringify(fetchedTransaccionesNew, null, 2), (err) => {
+    //   if (err) {
+    //     console.error('Error al guardar el archivo:', err);
+    //   } else {
+    //     console.log('Archivo guardado exitosamente.');
+    //   }
+    // });
     console.log("Summed Totals:", totals);
 
     // Mapping for concept keys
@@ -167,7 +193,8 @@ router.get('/', async (req, res) => {
       tarjetatotal: "Total Tarjetas",
       andadortotal: "Total Andador",
       cabinatotal: "Total Cabinas",
-      campobatallatotal: "Total Campo de batalla"
+      campobatallatotal: "Total Campo de batalla",
+      bebidastotal: "Total Bebidas"
     };
 
     // Create a new object with user-friendly key names
@@ -189,7 +216,7 @@ router.get('/', async (req, res) => {
     });
     incomeByPaymentMethod["Total"]= total_final;
 
-    console.log("Total Income:", JSON.stringify(incomeByPaymentMethod));
+    // console.log("Total Income:", JSON.stringify(incomeByPaymentMethod));
 
     // Mapping for payment methods
     const paymentMethodNameMap = {
