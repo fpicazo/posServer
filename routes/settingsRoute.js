@@ -74,17 +74,24 @@ router.get('/', async (req, res) => {
           
           encabezadosTipos.map( ( a ) => {
               
-              let cuenta = row.concepts.find( x => x.type === a.tipo );
-              if( cuenta ){
-              fila[a.cantidad] = cuenta.qty;
-              fila[a.precio] = cuenta.money;
-              fila[a.total] = cuenta.total;
-              }else{
+            let cuenta = row.concepts.filter( x => x.type === a.tipo );
+            if( cuenta.length > 0 ){
+              
+              const totalQty = cuenta.reduce((acc, cur) => acc + cur.qty, 0);
+              const totalMoney = cuenta.reduce((acc, cur) => acc + cur.money, 0);
+              const totalTotal = cuenta.reduce((acc, cur) => acc + cur.total, 0);
+
+              fila[a.cantidad] = totalQty;
+              fila[a.precio] = totalMoney;
+              fila[a.total] = totalTotal;
+              
+            }else{
               fila[a.cantidad] = 0;
               fila[a.precio] = 0;
               fila[a.total] = 0;
-              }
-          } )
+            }
+
+          })
 
         }else{
 

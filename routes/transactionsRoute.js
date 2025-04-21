@@ -18,11 +18,11 @@ router.post('/', async (req, res) => {
 
     
     const { amount, client, paymentMode,sessionid,cortesiaMotivo,cortesiaRango,nameUserCortesia,idinterno,cupon,discount, tc, sucursal } = req.body;
-    console.log("BODY new transaccion ", req.body);
+    // console.log("BODY new transaccion ", req.body);
     var concept = req.body?.concept;
     let { date } = req.body; // Declare date with let so it can be reassigned
 
-    console.log( ' ------------------------------------------------------ ', concept );
+    // console.log( ' ------------------------------------------------------ ', concept );
     
     // Check if date is not provided and assign the current date to it
     if (!date) {
@@ -38,7 +38,7 @@ router.post('/', async (req, res) => {
       const amount = product.price * product.quantity;
       return `${product.nameProduct} - ${product.quantity} - $${amount}`;
     }).join(' || ');
-    console.log("productPhrases2", productPhrases);
+    // console.log("productPhrases2", productPhrases);
 
 
      // Initialize variables to store aggregated values
@@ -99,7 +99,7 @@ router.post('/', async (req, res) => {
         default:
           console.log(`Product ${type} does not match any category.`);
       }
-      console.log("cabinatotal + ", cabinatotal);
+      // console.log("cabinatotal + ", cabinatotal);
     });
 
     // campobatallamoney += price;
@@ -109,7 +109,7 @@ router.post('/', async (req, res) => {
     let concepts = [];
     concept.forEach(product => {
 
-      console.log("product + ", product);
+      // console.log("product + ", product);
       const { _id, nameProduct, price, quantity, type } = product;
       const total = price * quantity;
 
@@ -409,7 +409,7 @@ router.post('/transparam', async(req, res) => {
   {
     const { startDate, endDate, arrayScucursales } = req.body;
 
-    console.log( startDate, endDate, arrayScucursales );
+    // console.log( startDate, endDate, arrayScucursales );
 
     const startDateF = new Date(`${startDate}T00:00:00Z`);  // Asegúrate de que es UTC si lo necesitas
     const endDateF = new Date(`${endDate}T23:59:59Z`);   
@@ -447,11 +447,16 @@ router.post('/transparam', async(req, res) => {
 
         if( row.concepts.length > 0 ){
           encabezadosTipos.map( ( a ) => {
-            let cuenta = row.concepts.find( x => x.type === a.tipo );
-            if( cuenta ){
-              fila[a.cantidad] = cuenta.qty;
-              fila[a.precio] = cuenta.money;
-              fila[a.total] = cuenta.total;
+            let cuenta = row.concepts.filter( x => x.type === a.tipo );
+            if( cuenta.length > 0 ){
+              
+              const totalQty = cuenta.reduce((acc, cur) => acc + cur.qty, 0);
+              const totalMoney = cuenta.reduce((acc, cur) => acc + cur.money, 0);
+              const totalTotal = cuenta.reduce((acc, cur) => acc + cur.total, 0);
+              
+              fila[a.cantidad] = totalQty;
+              fila[a.precio] = totalMoney;
+              fila[a.total] = totalTotal;
             }else{
               fila[a.cantidad] = 0;
               fila[a.precio] = 0;
