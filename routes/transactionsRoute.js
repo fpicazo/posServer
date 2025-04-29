@@ -4,6 +4,9 @@ const Transactions = require('../models/Transaction');
 const TransactionEliminadas = require('../models/TransactionEliminadas');
 const Reservation = require('../models/Reservation');
 const ReservationXCliente = require('../models/ReservationXCliente');
+
+const Product = require('../models/ProductModel');
+
 const Client = require('../models/Client');
 const Types = require('../models/typesModel');
 const moment = require('moment-timezone');
@@ -427,14 +430,29 @@ router.post('/transparam', async(req, res) => {
 
     const types = await Types.find({});
     let encabezadosTipos = [];
-    types.sort((a, b) => a.order - b.order).map( ( r ) => {
-      encabezadosTipos = [ ...encabezadosTipos, {
-        tipo: r.type,
-        cantidad: `${r.type} Cantidad`,
-        precio: `${r.type} Precio`,
-        total: `${r.type} Total`
-      } ];
-    } );
+
+    for (const r of types.sort((a, b) => a.order - b.order)) {
+      if (r.type === 'Promocion') {
+        const prod = await Product.find({ type: 'Promocion' });
+        for (const dt of prod) {
+          encabezadosTipos.push({
+            id: `${dt._id}`,
+            tipo: r.type,
+            cantidad: `${dt.nameProduct} Cantidad`,
+            precio: `${dt.nameProduct} Precio`,
+            total: `${dt.nameProduct} Total`
+          });
+        }
+      } else {
+        encabezadosTipos.push({
+          tipo: r.type,
+          cantidad: `${r.type} Cantidad`,
+          precio: `${r.type} Precio`,
+          total: `${r.type} Total`
+        });
+      }
+    }
+
 
     let fetchedTransaccionesNew = [];
     transactions.map( ( row ) => {
@@ -446,23 +464,57 @@ router.post('/transparam', async(req, res) => {
         fila.amount = row.amount;
 
         if( row.concepts.length > 0 ){
+          
           encabezadosTipos.map( ( a ) => {
-            let cuenta = row.concepts.filter( x => x.type === a.tipo );
-            if( cuenta.length > 0 ){
-              
-              const totalQty = cuenta.reduce((acc, cur) => acc + cur.qty, 0);
-              const totalMoney = cuenta.reduce((acc, cur) => acc + cur.money, 0);
-              const totalTotal = cuenta.reduce((acc, cur) => acc + cur.total, 0);
-              
-              fila[a.cantidad] = totalQty;
-              fila[a.precio] = totalMoney;
-              fila[a.total] = totalTotal;
+          
+            if( a.tipo === 'Promocion' ){
+
+              let cuenta = row.concepts.filter( x => x.type === a.tipo && x.id === a.id );
+              if( cuenta.length > 0 ){
+                
+                const totalQty = cuenta.reduce((acc, cur) => acc + cur.qty, 0);
+                const totalMoney = cuenta.reduce((acc, cur) => acc + cur.money, 0);
+                const totalTotal = cuenta.reduce((acc, cur) => acc + cur.total, 0);
+
+                fila[a.cantidad] = totalQty;
+                fila[a.precio] = totalMoney;
+                fila[a.total] = totalTotal;
+
+              }else{
+
+                fila[a.cantidad] = 0;
+                fila[a.precio] = 0;
+                fila[a.total] = 0;
+
+              }
+
             }else{
-              fila[a.cantidad] = 0;
-              fila[a.precio] = 0;
-              fila[a.total] = 0;
-            }
-          } )
+
+                let cuenta = row.concepts.filter( x => x.type === a.tipo );
+                
+                if( cuenta.length > 0 ){
+                  
+                  const totalQty = cuenta.reduce((acc, cur) => acc + cur.qty, 0);
+                  const totalMoney = cuenta.reduce((acc, cur) => acc + cur.money, 0);
+                  const totalTotal = cuenta.reduce((acc, cur) => acc + cur.total, 0);
+                  
+                  fila[a.cantidad] = totalQty;
+                  fila[a.precio] = totalMoney;
+                  fila[a.total] = totalTotal;
+
+                }else{
+                  
+                  fila[a.cantidad] = 0;
+                  fila[a.precio] = 0;
+                  fila[a.total] = 0;
+
+                }
+
+              }
+
+            } );
+
+
         }else{
 
           fila['Campo de Batalla Cantidad'] = row.campobatallaqty;
@@ -524,6 +576,23 @@ router.post('/transparam', async(req, res) => {
       } );
     
     res.json(fetchedTransaccionesNew);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching transactions" });
+  }
+});
+
+
+
+router.get('/products', async(req, res) => {
+
+  try 
+  {
+    
+    const prod = await Product.find();
+    
+    res.json(prod);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching transactions" });
