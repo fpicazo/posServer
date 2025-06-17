@@ -9,6 +9,7 @@ const stripeSuc = require('stripe');
 const axios = require('axios');
 
   router.post('/', async (req, res) => {
+    console.log("BODY "+req.body);
     const session_id = req.body.sessionid;
     const amount = req.body.amount;
     const articulos = req.body.articulos;
