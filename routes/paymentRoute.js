@@ -9,34 +9,37 @@ const stripeSuc = require('stripe');
 const axios = require('axios');
 
   router.post('/', async (req, res) => {
-    console.log("BODY "+JSON.stringify(req.body));
-    const session_id = req.body.sessionid;
-    const amount = req.body.amount;
-    const articulos = req.body.articulos;
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      allow_promotion_codes:true,
-      line_items: [{
-        price_data: { 
-          currency: 'mxn',
-          product_data: { 
-            name: articulos, 
-          },
-          unit_amount: amount * 100,  
+  const session_id = req.body.sessionid;
+  const amount = req.body.amount;
+  const articulos = req.body.articulos;
+  const idBranch = req.body.sucursal; // You'll need to pass this from frontend
+  
+  // Get the correct Stripe instance for this branch
+  const branchStripe = await getStripeInstance(idBranch);
+  
+  const session = await branchStripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    allow_promotion_codes: true,
+    line_items: [{
+      price_data: { 
+        currency: 'mxn',
+        product_data: { 
+          name: articulos, 
         },
-        quantity: 1, 
-      }],
-      metadata: {
-        orderId: session_id.toString(),
+        unit_amount: amount * 100,  
       },
-      mode: 'payment',
-      success_url:  process.env.BASE_URL + "/#/success?session_id=" + session_id,
-      cancel_url: process.env.BASE_URL + '/#/cancel?session_id=' + session_id,
-    });
-    // await Reservation.findOneAndUpdate( { _id: session_id }, { idSessionStripe: session.id });
-    res.json({ id: session.id, url: session.url }); 
+      quantity: 1, 
+    }],
+    metadata: {
+      orderId: session_id.toString(),
+    },
+    mode: 'payment',
+    success_url: process.env.BASE_URL + "/#/success?session_id=" + session_id,
+    cancel_url: process.env.BASE_URL + '/#/cancel?session_id=' + session_id,
   });
-
+  
+  res.json({ id: session.id, url: session.url }); 
+});
 
   router.get('/stripe_session', async (req, res) => {
     const idsession = req.query.session_id;
@@ -66,7 +69,7 @@ const axios = require('axios');
   
   const getStripeInstance = async( _id ) => {
 
-    let stripeSecretKey = ''
+    let stripeSecretKey =  process.env.STRIPE_SECRET_TEPIC;
     if( _id === '6735e8fe3cbf3096493afa5e' ){
       stripeSecretKey = process.env.STRIPE_SECRET_TEPIC;
     }else if( _id === '6767682b3b3a0a728a7025f6' ){
