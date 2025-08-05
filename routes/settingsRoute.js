@@ -9,9 +9,9 @@ const Timezone = "America/Hermosillo";
 
 const fs = require('fs');
 
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
   
-  var { startDate, endDate, branches } = req.query;
+  var { startDate, endDate, branches } = req.body;
   // console.log("branches:", branches);
   
   if (!startDate) {
