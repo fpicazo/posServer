@@ -12,7 +12,7 @@ const Branches = require('../models/branchesModel');
 
 
 router.post('/confirmation', async (req, res) => {
-    const { email,clientName,hour,game } = req.body
+    const { email,clientName,date,game,players } = req.body
     console.log("email: "+email);
     const { lastTokenHour, token } = await updateTokenHour();
     var location = req.body.location || "Tepic Plaza Forum";
@@ -30,6 +30,10 @@ router.post('/confirmation', async (req, res) => {
     <br>
     Dirección: Blvrd. Luis Donaldo Colosio 680, Benito Juárez Oriente, 63175 Tepic, Nay. - PLAZA FORUM TEPIC.
     <br>
+    Detalles:
+    <br>
+    Juego: ${game}, Horario: ${date} con ${players} jugadores.
+    <br>
     Estamos ubicados en el segundo nivel a un lado de Cinemex.
     <br><br>
     POLÍTICA DE CANCELACIÓN: Debido a las reservas limitadas, solicitamos que canceles al menos 72 horas antes de tu reserva programada.
@@ -44,7 +48,7 @@ router.post('/confirmation', async (req, res) => {
     <br><br>
     Saludos cordiales,
     <br>
-    Virtuality World - Tepic Plaza Forum`;
+    Virtuality World - ${location}`;
 
 
     try {

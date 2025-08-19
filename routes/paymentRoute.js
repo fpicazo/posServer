@@ -9,6 +9,7 @@ const stripeSuc = require('stripe');
 const axios = require('axios');
 
   router.post('/', async (req, res) => {
+    console.log("OK")
   const session_id = req.body.sessionid;
   const amount = req.body.amount;
   const articulos = req.body.articulos;
@@ -41,21 +42,65 @@ const axios = require('axios');
   res.json({ id: session.id, url: session.url }); 
 });
 
-  router.get('/stripe_session', async (req, res) => {
-    const idsession = req.query.session_id;
-    const bucqueda = await Reservation.findById(idsession);
+router.get('/stripe_session', async (req, res) => {
+  try {
+    console.log("GET /stripe_session");
 
-    const session = await stripe.checkout.sessions.retrieve(bucqueda.idSessionStripe, {
+    const { session_id, reservation_id } = req.query;
+    let stripeSessionId;
+
+    // 1) Si te mandan directamente el ID de sesión de Stripe (cs_xxx), úsalo
+    if (session_id && session_id.startsWith('cs_')) {
+      stripeSessionId = session_id;
+    } else {
+      // 2) Si te mandan el id de tu reservación (o lo estás usando en session_id)
+      const id = reservation_id || session_id;
+      if (!id) {
+        return res.status(400).json({ error: 'Falta session_id (cs_...) o reservation_id' });
+      }
+
+      const reserva = await Reservation.findById(id).lean();
+      if (!reserva) {
+        return res.status(404).json({ error: 'Reservation no encontrada' });
+      }
+
+      // Ajusta aquí el nombre real del campo que guardas en tu DB
+      stripeSessionId = reserva.idSessionStripe || reserva.stripeSessionId;
+    }
+
+    if (!stripeSessionId || typeof stripeSessionId !== 'string') {
+      return res.status(400).json({ error: 'La reservación no tiene stripe session id válido' });
+    }
+
+    // Recupera la sesión de Stripe
+    const session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
+      // opcional: expand si lo necesitas
       expand: ['total_details.breakdown']
     });
-    const amount_total = session.amount_subtotal;
-    const amount_final = session.amount_total;
-    const descuento = parseFloat(((1 - (amount_final / amount_total))*100 ).toFixed(2));
-    const couponName = session.total_details?.breakdown?.discounts?.[0]?.discount?.coupon?.name;
-    const json = { amount_total, amount_final, descuento, couponName };
-    res.json(json);
+
+    const amount_subtotal = session.amount_subtotal ?? 0;
+    const amount_total = session.amount_total ?? 0;
+
+    const descuento = amount_subtotal
+      ? Number(((1 - (amount_total / amount_subtotal)) * 100).toFixed(2))
+      : 0;
+
+    const couponName =
+      session.total_details?.breakdown?.discounts?.[0]?.discount?.coupon?.name ?? null;
+
+    res.json({
+      sessionId: session.id,
+      amount_total: amount_subtotal,   // como en tu ejemplo original
+      amount_final: amount_total,
+      descuento,
+      couponName
+    });
+  } catch (err) {
+    console.error('stripe_session error:', err);
+    res.status(500).json({ error: err.message });
   }
-  );
+});
+
 
 
   router.get('/payment-intent', async (req, res) => {
