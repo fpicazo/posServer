@@ -48,6 +48,7 @@ router.get('/stripe_session', async (req, res) => {
 
     const { session_id, reservation_id } = req.query;
     let stripeSessionId;
+    
 
     // 1) Si te mandan directamente el ID de sesión de Stripe (cs_xxx), úsalo
     if (session_id && session_id.startsWith('cs_')) {
@@ -59,10 +60,15 @@ router.get('/stripe_session', async (req, res) => {
         return res.status(400).json({ error: 'Falta session_id (cs_...) o reservation_id' });
       }
 
+      console.log("Buscando reservación con ID:", id);
+
       const reserva = await Reservation.findById(id).lean();
       if (!reserva) {
         return res.status(404).json({ error: 'Reservation no encontrada' });
       }
+
+      
+
 
       // Ajusta aquí el nombre real del campo que guardas en tu DB
       stripeSessionId = reserva.idSessionStripe || reserva.stripeSessionId;
@@ -72,11 +78,28 @@ router.get('/stripe_session', async (req, res) => {
       return res.status(400).json({ error: 'La reservación no tiene stripe session id válido' });
     }
 
-    // Recupera la sesión de Stripe
+    const id = reservation_id || session_id;
+    let checkReserva =  await Reservation.findById(id).lean();
+    console.log("Reservación encontrada:", checkReserva);
+    if (checkReserva)
+    {
+      branchStripe = await getStripeInstance(checkReserva.idBranch);
+      //console.log("Usando Stripe de la sucursal:", branchStripe);
+      const session = await branchStripe.checkout.sessions.retrieve(stripeSessionId, {
+      // opcional: expand si lo necesitas
+      expand: ['total_details.breakdown']
+    });
+    }
+    else {
+// Recupera la sesión de Stripe
     const session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
       // opcional: expand si lo necesitas
       expand: ['total_details.breakdown']
     });
+    }
+
+
+    
 
     const amount_subtotal = session.amount_subtotal ?? 0;
     const amount_total = session.amount_total ?? 0;
@@ -113,6 +136,7 @@ router.get('/stripe_session', async (req, res) => {
 
   
   const getStripeInstance = async( _id ) => {
+    console.log("ID de la sucursal para Stripe:", _id);
 
     let stripeSecretKey =  process.env.STRIPE_SECRET_TEPIC;
     if( _id === '6735e8fe3cbf3096493afa5e' ){
@@ -122,6 +146,10 @@ router.get('/stripe_session', async (req, res) => {
     }else if( _id === '677c1f827fbcf502f61e9cae' ){
       stripeSecretKey = process.env.STRIPE_SECRET_VALLARTA;
     }
+    else if( _id === '676a75a28854b17ed8727f62' ){
+      stripeSecretKey = process.env.STRIPE_SECRET_MONTERREY;
+    }
+    console.log("Stripe Secret Key:", stripeSecretKey);
 
     return stripeSuc(stripeSecretKey);
 

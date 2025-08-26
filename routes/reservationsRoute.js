@@ -538,11 +538,11 @@ router.put('/:id', async (req, res) => {
   const { id } = req.params;
   console.log(id);
   console.log(req.body);
-    const { phone, firstName, lastName, email } = req.body;
+    const { phone, firstName, lastName, email,idSessionStripe, idBranch } = req.body;
   try {
     const updatedReservation = await Reservation.findByIdAndUpdate(
         id, 
-        { phone, firstName, lastName, email },
+        { phone, firstName, lastName, email,idSessionStripe, idBranch },
         { new: true }
         );
 
