@@ -200,7 +200,8 @@ router.get('/stripe_session', async (req, res) => {
           orderId: savedReservation._id.toString(),
         },
         mode: 'payment',
-        success_url:  process.env.BASE_URL + "/success/" + savedReservation._id.toString()
+        success_url:  process.env.BASE_URL + "/success/" + savedReservation._id.toString(),
+        customer_email: reservation.contactEmail
         // cancel_url: process.env.BASE_URL + '/#/cancel?session_id=' + orderId,
       });
 
@@ -324,6 +325,62 @@ router.get('/stripe_session', async (req, res) => {
               }
           ]
 
+        });
+
+
+        let data = JSON.stringify({
+          "toAddress": correoElectronico,
+          "subject": "Registro VirtualGame",
+          "content": `
+            <h2 style='color:#4CAF50;'>Registro exitoso en VirtualGame</h2>
+            <p>
+              <b>Razón Social:</b> ${razonSocial.toUpperCase()}
+            </p>
+            <p>
+              <b>RFC:</b> ${rfc.toUpperCase()}
+            </p>
+            <p>
+              <b>Teléfono:</b> ${telefono}
+            </p>
+            <p>
+              <b>Correo:</b> ${correoElectronico}
+            </p>
+            <p>
+              <b>País:</b> México
+            </p>
+            <p>
+              <b>Sucursal:</b> VirtualityWorld
+            </p>
+            <p>
+              <b>Membresía:</b> Suscripción Mensual ${plan}
+            </p>
+            <p>
+              <b>Costo:</b> $${costo} MXN
+            </p>
+            <p>
+              <b>Fecha de registro:</b> ${formato}
+            </p>
+            
+            <hr>
+            <p style='font-size:12px; color:#888; text-align:center;'>Este es un correo de información, por favor no responder.</p>`
+        });
+
+        let config = {
+          method: 'post',
+          maxBodyLength: Infinity,
+          url: 'https://www.zohoapis.com/crm/v7/functions/endpoint_newregister/actions/execute?auth_type=apikey&zapikey=1003.6814c4b884df902fd1e81a382355778e.4ad91c4959f30dfba7bee39e1b2bbcc5',
+          headers: { 
+            'Content-Type': 'application/json'
+          },
+          data : data
+        };
+
+        axios.request(config)
+        .then((response) => {
+          console.log(JSON.stringify(response.data));
+        })
+        .catch((error) => {
+          console.log(error);
         });
 
         const id_zoho = respAcco.data.data[0].details.id;
