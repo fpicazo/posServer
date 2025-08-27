@@ -591,6 +591,7 @@ router.put('/status/:id', async (req, res) => {
     updatedReservation.email = client.email;
     updatedReservation.idreservacioncliente = details[0]._id;
     updatedReservation.cupon = details[0].status;
+    updatedReservation.date = updatedReservation.date;
 
     if (!updatedReservation) {
       return res.status(404).json({ message: "Reservation not found222" });

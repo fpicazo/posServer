@@ -47,80 +47,81 @@ router.get('/stripe_session', async (req, res) => {
     console.log("GET /stripe_session");
 
     const { session_id, reservation_id } = req.query;
-    let stripeSessionId;
-    
 
-    // 1) Si te mandan directamente el ID de sesión de Stripe (cs_xxx), úsalo
-    if (session_id && session_id.startsWith('cs_')) {
+    // Will hold the final Stripe session and the id we use to fetch it
+    let stripeSessionId;
+    let session; // <-- define in outer scope so it's visible later
+
+    // 1) If they pass the Stripe session id directly (cs_xxx), use it
+    if (session_id && typeof session_id === 'string' && session_id.startsWith('cs_')) {
       stripeSessionId = session_id;
+
+      // Use your default Stripe client here
+      // Make sure `stripe` is defined elsewhere, e.g.:
+      // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+      session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
+        expand: ['total_details.breakdown']
+      });
+
     } else {
-      // 2) Si te mandan el id de tu reservación (o lo estás usando en session_id)
-      const id = reservation_id || session_id;
-      if (!id) {
+      // 2) Otherwise, use a reservation id (either reservation_id or session_id as a fallback)
+      const reservationId = reservation_id || session_id;
+      if (!reservationId) {
         return res.status(400).json({ error: 'Falta session_id (cs_...) o reservation_id' });
       }
 
-      console.log("Buscando reservación con ID:", id);
+      console.log("Buscando reservación con ID:", reservationId);
 
-      const reserva = await Reservation.findById(id).lean();
+      const reserva = await Reservation.findById(reservationId).lean();
       if (!reserva) {
         return res.status(404).json({ error: 'Reservation no encontrada' });
       }
 
-      
-
-
-      // Ajusta aquí el nombre real del campo que guardas en tu DB
+      // Ajusta el nombre real del campo que guardas en tu DB
       stripeSessionId = reserva.idSessionStripe || reserva.stripeSessionId;
+
+      if (!stripeSessionId || typeof stripeSessionId !== 'string') {
+        return res.status(400).json({ error: 'La reservación no tiene stripe session id válido' });
+      }
+
+      // Escoge el cliente de Stripe según la sucursal, si aplica
+      let stripeClient = stripe; // fallback al stripe por defecto
+      if (reserva.idBranch) {
+        // getStripeInstance debe devolverte un cliente configurado con la secret key de esa sucursal
+        const branchStripe = await getStripeInstance(reserva.idBranch);
+        if (branchStripe) stripeClient = branchStripe;
+      }
+
+      // Recupera la sesión de Stripe con el cliente elegido
+      session = await stripeClient.checkout.sessions.retrieve(stripeSessionId, {
+        expand: ['total_details.breakdown']
+      });
     }
 
-    if (!stripeSessionId || typeof stripeSessionId !== 'string') {
-      return res.status(400).json({ error: 'La reservación no tiene stripe session id válido' });
-    }
-
-    const id = reservation_id || session_id;
-    let checkReserva =  await Reservation.findById(id).lean();
-    console.log("Reservación encontrada:", checkReserva);
-    if (checkReserva)
-    {
-      branchStripe = await getStripeInstance(checkReserva.idBranch);
-      //console.log("Usando Stripe de la sucursal:", branchStripe);
-      const session = await branchStripe.checkout.sessions.retrieve(stripeSessionId, {
-      // opcional: expand si lo necesitas
-      expand: ['total_details.breakdown']
-    });
-    }
-    else {
-// Recupera la sesión de Stripe
-    const session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
-      // opcional: expand si lo necesitas
-      expand: ['total_details.breakdown']
-    });
-    }
-
-
-    
-
-    const amount_subtotal = session.amount_subtotal ?? 0;
-    const amount_total = session.amount_total ?? 0;
+    // ---- Cálculos ----
+    const amount_subtotal = session?.amount_subtotal ?? 0;
+    const amount_total = session?.amount_total ?? 0;
 
     const descuento = amount_subtotal
       ? Number(((1 - (amount_total / amount_subtotal)) * 100).toFixed(2))
       : 0;
 
     const couponName =
-      session.total_details?.breakdown?.discounts?.[0]?.discount?.coupon?.name ?? null;
+      session?.total_details?.breakdown?.discounts?.[0]?.discount?.coupon?.name ?? null;
 
+    // Mantengo los nombres de tu respuesta original para no romper el frontend:
+    // amount_total = subtotal; amount_final = total
     res.json({
       sessionId: session.id,
-      amount_total: amount_subtotal,   // como en tu ejemplo original
+      amount_total: amount_subtotal,
       amount_final: amount_total,
       descuento,
       couponName
     });
+
   } catch (err) {
     console.error('stripe_session error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err?.message || 'Internal error' });
   }
 });
 
@@ -138,15 +139,23 @@ router.get('/stripe_session', async (req, res) => {
   const getStripeInstance = async( _id ) => {
     console.log("ID de la sucursal para Stripe:", _id);
 
+    if (_id && typeof _id === 'object' && _id.toString) {
+        // It's likely an ObjectId
+        idString = _id.toString();
+    } else {
+        // It's already a string
+        idString = _id;
+    }
+    console.log("ID de la sucursal para Stripe2:", idString);
     let stripeSecretKey =  process.env.STRIPE_SECRET_TEPIC;
-    if( _id === '6735e8fe3cbf3096493afa5e' ){
+    if( idString === '6735e8fe3cbf3096493afa5e' ){
       stripeSecretKey = process.env.STRIPE_SECRET_TEPIC;
-    }else if( _id === '6767682b3b3a0a728a7025f6' ){
+    }else if( idString === '6767682b3b3a0a728a7025f6' ){
       stripeSecretKey = process.env.STRIPE_SECRET_GUADA;
-    }else if( _id === '677c1f827fbcf502f61e9cae' ){
+    }else if( idString === '677c1f827fbcf502f61e9cae' ){
       stripeSecretKey = process.env.STRIPE_SECRET_VALLARTA;
     }
-    else if( _id === '676a75a28854b17ed8727f62' ){
+    else if( idString === '676a75a28854b17ed8727f62' ){
       stripeSecretKey = process.env.STRIPE_SECRET_MONTERREY;
     }
     console.log("Stripe Secret Key:", stripeSecretKey);

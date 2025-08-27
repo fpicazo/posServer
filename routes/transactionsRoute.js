@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
     }
 
     if (!concept ) {
-      concept = [{ name: 'Campo de Batalla', price: req.body?.campobatallamoney, quantity: req.body?.campobatallaqty }];
+      concept = [{ type: 'Campo de Batalla', name: 'Campo de Batalla', price: req.body?.campobatallamoney, quantity: req.body?.campobatallaqty,campobatallatotal: req.body?.campobatallatotal  }];
     }
 
     //console.log("Concept", concept);
@@ -129,7 +129,7 @@ router.post('/', async (req, res) => {
     const branches = await Branches.findById(sucursal);
     const newTransaction = new Transactions({
       date,
-      amount,
+      amount : amount || req.body?.campobatallamoney,
       concept:productPhrases,
       concepts: concepts,
       paymentMode,
@@ -169,10 +169,12 @@ router.post('/', async (req, res) => {
       discount,
       tc: tc,
       sucursal: sucursal,
-      currency: branches.currency
+      currency: branches?.currency || "MXN"
 
 
         });
+
+        console.log("New transaction created:", newTransaction);
 
         await newTransaction.save();
 
